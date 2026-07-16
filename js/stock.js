@@ -69,16 +69,28 @@ function renderProducts(products){
 }
 async function saveProduct() {
 
-    const product = {
+  const product = {
+    product: document.getElementById("productName").value.trim(),
+    manufacturer: document.getElementById("manufacturer").value.trim(),
+    category: document.getElementById("category").value.trim(),
+    hsn: document.getElementById("hsn").value.trim(),
 
-        product: document.getElementById("productName").value.trim(),
-        mrp: Number(document.getElementById("productMRP").value),
-        rate: Number(document.getElementById("productRate").value),
-        gst: Number(document.getElementById("productGST").value),
-        lot: document.getElementById("productLot").value,
-        expiry: document.getElementById("productExpiry").value
+    purchase_rate: Number(document.getElementById("purchaseRate").value),
 
-    };
+    selling_rate: Number(document.getElementById("sellingRate").value),
+
+    mrp: Number(document.getElementById("productMRP").value),
+
+    gst: Number(document.getElementById("productGST").value),
+
+    quantity: Number(document.getElementById("quantity").value),
+
+    unit: document.getElementById("unit").value.trim(),
+
+    batch: document.getElementById("productLot").value,
+
+    expiry: document.getElementById("productExpiry").value
+};
 
     if (product.product === "") {
 
