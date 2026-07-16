@@ -94,3 +94,20 @@ main{
     border-radius:12px;
     box-shadow:0 3px 10px rgba(0,0,0,.08);
 }
+.formGrid{
+
+display:grid;
+
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+
+gap:15px;
+
+margin-bottom:20px;
+
+}
+
+#searchProduct{
+
+margin-top:10px;
+
+}
