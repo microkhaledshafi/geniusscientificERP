@@ -1,0 +1,9 @@
+css/style.css
+js/app.js
+js/supabase.js
+js/stock.js
+js/customer.js
+js/billing.js
+js/payment.js
+js/report.js
+index.html
