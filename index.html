@@ -1,3 +1,5 @@
+<main>
+
 <section id="dashboard" class="page">
 
 <h1>Dashboard</h1>
@@ -37,3 +39,88 @@ This dashboard will automatically display live data from Supabase as we build th
 </div>
 
 </section>
+
+<section id="stock" class="page" style="display:none">
+
+<h1>Stock Management</h1>
+
+<div class="tableCard">
+
+<h2>Add Product</h2>
+
+<input id="productName" placeholder="Product Name">
+
+<input id="productMRP" type="number" placeholder="MRP">
+
+<input id="productRate" type="number" placeholder="Rate">
+
+<input id="productGST" type="number" placeholder="GST %">
+
+<input id="productLot" placeholder="Lot Number">
+
+<input id="productExpiry" type="date">
+
+<button onclick="saveProduct()">Save Product</button>
+
+</div>
+
+<div class="tableCard">
+
+<h2>Products</h2>
+
+<table width="100%">
+
+<thead>
+<tr>
+<th>Name</th>
+<th>MRP</th>
+<th>Rate</th>
+<th>GST</th>
+<th>Lot</th>
+<th>Expiry</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody id="stockBody">
+</tbody>
+
+</table>
+
+</div>
+
+</section>
+
+<section id="customers" class="page" style="display:none">
+<h1>Customers</h1>
+</section>
+
+<section id="billing" class="page" style="display:none">
+<h1>Billing</h1>
+</section>
+
+<section id="payments" class="page" style="display:none">
+<h1>Payments</h1>
+</section>
+
+<section id="reports" class="page" style="display:none">
+<h1>Reports</h1>
+</section>
+
+<section id="settings" class="page" style="display:none">
+
+<h1>Settings</h1>
+
+<div class="tableCard">
+
+<h3>Supabase Connection</h3>
+
+<button onclick="testConnection()">
+Test Connection
+</button>
+
+</div>
+
+</section>
+
+</main>
