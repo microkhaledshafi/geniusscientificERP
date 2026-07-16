@@ -1,20 +1,44 @@
-// Genius Scientific ERP v5.0
+// Genius Scientific ERP
+// Supabase Connection
 
-function showPage(pageId) {
+const SUPABASE_URL = "https://cxssryhesrgomcdxddwn.supabase.co";
+const SUPABASE_KEY = "sb_publishable_QiNQzM7U5l6mJpbHIN4UJQ_nv_90lED";
 
-    // Hide all pages
-    document.querySelectorAll(".page").forEach(page => {
-        page.style.display = "none";
-    });
+const supabaseClient = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
 
-    // Show selected page
-    document.getElementById(pageId).style.display = "block";
+async function testConnection() {
+
+    try {
+
+        const { data, error } =
+            await supabaseClient
+            .from("products")
+            .select("*")
+            .limit(1);
+
+        if (error) {
+
+            console.error(error);
+
+            alert("Supabase Connected, but table not found.");
+
+            return;
+
+        }
+
+        alert("Supabase Connected Successfully");
+
+    }
+
+    catch (err) {
+
+        console.error(err);
+
+        alert("Connection Failed");
+
+    }
 
 }
-
-// Default page
-window.onload = function () {
-
-    showPage("dashboard");
-
-};
