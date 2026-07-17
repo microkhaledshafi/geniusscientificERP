@@ -13,17 +13,19 @@ let editingProductId = null;
 
 async function loadProducts() {
 
-    if (!supabaseClient) return;
+    if (!isSupabaseReady()) return;
 
     const { data, error } = await supabaseClient
         .from("products")
         .select("*")
-        .order("product");
+        .order("product", { ascending: true });
 
     if (error) {
 
         console.error(error);
-        alert(error.message);
+
+        toast(error.message, "#dc3545");
+
         return;
 
     }
@@ -34,42 +36,12 @@ async function loadProducts() {
 
     updateProductCount();
 
-    if (typeof refreshBillingProducts === "function") {
-        refreshBillingProducts();
-    } else if (typeof loadInvoiceProducts === "function") {
-        loadInvoiceProducts();
-    }
-
-}
-function loadInvoiceProducts() {
-
-    const selects = document.querySelectorAll(".productSelect");
-
-    selects.forEach(select => {
-
-        const current = select.value;
-
-        select.innerHTML =
-            '<option value="">Select Product</option>';
-
-        productCache.forEach(product => {
-
-            select.innerHTML += `
-                <option value="${product.id}">
-                    ${product.product}
-                </option>
-            `;
-
-        });
-
-        select.value = current;
-
-    });
+    refreshBillingProducts();
 
 }
 
 //==========================================
-// Render Product Table
+// Render Products
 //==========================================
 
 function renderProducts(list = productCache) {
@@ -123,7 +95,7 @@ Edit
 </button>
 
 <button
-class="actionBtn"
+class="actionBtn deleteBtn"
 onclick="deleteProduct(${product.id})">
 
 Delete
@@ -141,7 +113,7 @@ Delete
 }
 
 //==========================================
-// Dashboard Product Count
+// Dashboard Counter
 //==========================================
 
 function updateProductCount() {
@@ -150,20 +122,64 @@ function updateProductCount() {
 
     if (total) {
 
-        total.innerHTML = productCache.length;
+        total.textContent = productCache.length;
 
     }
+
 }
-    //==========================================
+
+//==========================================
+// Billing Product Dropdown
+//==========================================
+
+function refreshBillingProducts() {
+
+    if (typeof loadInvoiceProducts === "function") {
+
+        loadInvoiceProducts();
+
+    }
+
+}
+
+//==========================================
+// Get Product By ID
+//==========================================
+
+function getProductById(id) {
+
+    return productCache.find(
+
+        product => Number(product.id) === Number(id)
+
+    );
+
+}
+
+//==========================================
+// Get Product By Name
+//==========================================
+
+function getProductByName(name) {
+
+    return productCache.find(
+
+        product =>
+
+            (product.product || "").toLowerCase() ===
+            (name || "").toLowerCase()
+
+    );
+
+}
+
+//==========================================
 // Save Product
 //==========================================
 
 async function saveProduct() {
 
-    if (!supabaseClient) {
-        alert("Supabase not connected.");
-        return;
-    }
+    if (!isSupabaseReady()) return;
 
     const product = {
 
@@ -207,45 +223,55 @@ async function saveProduct() {
 
     if (product.product === "") {
 
-        alert("Product Name is required");
+        toast("Product Name is required", "#dc3545");
 
         return;
 
     }
 
-    let result;
+    let error;
 
     if (editingProductId === null) {
 
-        result = await supabaseClient
+        ({ error } = await supabaseClient
+
             .from("products")
-            .insert([product]);
+
+            .insert([product]));
 
     } else {
 
-        result = await supabaseClient
+        ({ error } = await supabaseClient
+
             .from("products")
+
             .update(product)
-            .eq("id", editingProductId);
+
+            .eq("id", editingProductId));
 
     }
 
-    if (result.error) {
+    if (error) {
 
-        console.error(result.error);
+        console.error(error);
 
-        alert(result.error.message);
+        toast(error.message, "#dc3545");
 
         return;
 
     }
 
-    clearProductForm();
+    toast(
 
-    editingProductId = null;
+        editingProductId === null
 
-    document.getElementById("saveButtonProduct").innerHTML =
-        "Save Product";
+            ? "Product Saved"
+
+            : "Product Updated"
+
+    );
+
+    resetProductForm();
 
     await loadProducts();
 
@@ -257,13 +283,11 @@ async function saveProduct() {
 
 function editProduct(id) {
 
-    const product = productCache.find(
-    p => Number(p.id) === Number(id)
-);
+    const product = getProductById(id);
 
     if (!product) return;
 
-    editingProductId = id;
+    editingProductId = Number(id);
 
     document.getElementById("productName").value =
         product.product || "";
@@ -304,7 +328,7 @@ function editProduct(id) {
     document.getElementById("expiry").value =
         product.expiry || "";
 
-    document.getElementById("saveButtonProduct").innerHTML =
+    document.getElementById("saveButtonProduct").textContent =
         "Update Product";
 
 }
@@ -342,7 +366,23 @@ function clearProductForm() {
     document.getElementById("expiry").value = "";
 
 }
-    //==========================================
+
+//==========================================
+// Reset Product Form
+//==========================================
+
+function resetProductForm() {
+
+    editingProductId = null;
+
+    clearProductForm();
+
+    document.getElementById("saveButtonProduct").textContent =
+        "Save Product";
+
+}
+
+//==========================================
 // Delete Product
 //==========================================
 
@@ -363,18 +403,20 @@ async function deleteProduct(id) {
 
         console.error(error);
 
-        alert(error.message);
+        toast(error.message, "#dc3545");
 
         return;
 
     }
+
+    toast("Product deleted successfully");
 
     await loadProducts();
 
 }
 
 //==========================================
-// Search Products
+// Search Product
 //==========================================
 
 function searchProduct() {
@@ -382,116 +424,199 @@ function searchProduct() {
     const keyword = document
         .getElementById("productSearch")
         .value
-        .toLowerCase()
-        .trim();
+        .trim()
+        .toLowerCase();
 
     if (keyword === "") {
 
-        renderProducts();
+        renderProducts(productCache);
 
         return;
 
     }
 
-    const filtered = productCache.filter(product =>
+    const filtered = productCache.filter(product => {
 
-        (product.product || "")
-            .toLowerCase()
-            .includes(keyword)
+        return (
 
-        ||
+            (product.product || "")
+                .toLowerCase()
+                .includes(keyword)
 
-        (product.manufacturer || "")
-            .toLowerCase()
-            .includes(keyword)
+            ||
 
-        ||
+            (product.manufacturer || "")
+                .toLowerCase()
+                .includes(keyword)
 
-        (product.category || "")
-            .toLowerCase()
-            .includes(keyword)
+            ||
 
-        ||
+            (product.category || "")
+                .toLowerCase()
+                .includes(keyword)
 
-        (product.batch || "")
-            .toLowerCase()
-            .includes(keyword)
+            ||
 
-        ||
+            (product.batch || "")
+                .toLowerCase()
+                .includes(keyword)
 
-        (product.lot || "")
-            .toLowerCase()
-            .includes(keyword)
+            ||
 
-        ||
+            (product.lot || "")
+                .toLowerCase()
+                .includes(keyword)
 
-        (product.hsn || "")
-            .toLowerCase()
-            .includes(keyword)
+            ||
 
-    );
+            (product.hsn || "")
+                .toLowerCase()
+                .includes(keyword)
+
+        );
+
+    });
 
     renderProducts(filtered);
 
 }
 
 //==========================================
-// Reset Product Form
+// Product Exists
 //==========================================
 
-function resetProductForm() {
+function productExists(productName) {
 
-    editingProductId = null;
+    return productCache.some(product =>
 
-    clearProductForm();
+        (product.product || "")
+            .toLowerCase()
+            ===
+        (productName || "")
+            .toLowerCase()
 
-    const btn = document.getElementById("saveButtonProduct");
-
-    if (btn) {
-
-        btn.innerHTML = "Save Product";
-
-    }
-
-}
-
-//==========================================
-// Refresh Billing Products
-//==========================================
-
-function refreshBillingProducts() {
-
-    if (typeof loadInvoiceProducts === "function") {
-
-        loadInvoiceProducts();
-
-    }
-
-}
-
-//==========================================
-// Get Product by ID
-//==========================================
-
-function getProductById(id) {
-
-    return productCache.find(
-        product => Number(product.id) === Number(id)
     );
 
 }
 
 //==========================================
-// Get Product by Name
+// Get Product List
 //==========================================
 
-function getProductByName(name) {
+function getProductList() {
 
-    return productCache.find(
-        product =>
-            (product.product || "").toLowerCase() ===
-            (name || "").toLowerCase()
-    );
+    return productCache;
 
 }
 
+//==========================================
+// Refresh Product Module
+//==========================================
+
+async function refreshProductModule() {
+
+    await loadProducts();
+
+}
+
+//==========================================
+// Auto Initialization
+//==========================================
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    // Save Product Button
+    const saveBtn = document.getElementById("saveButtonProduct");
+
+    if (saveBtn) {
+
+        saveBtn.addEventListener("click", saveProduct);
+
+    }
+
+    // Product Search
+    const searchBox = document.getElementById("productSearch");
+
+    if (searchBox) {
+
+        searchBox.addEventListener("keyup", searchProduct);
+
+    }
+
+    // Press Enter to Save Product
+    [
+        "productName",
+        "manufacturer",
+        "category",
+        "lot",
+        "batch",
+        "hsn",
+        "purchaseRate",
+        "sellingRate",
+        "mrp",
+        "gst",
+        "quantity",
+        "unit",
+        "expiry"
+    ].forEach(id => {
+
+        const element = document.getElementById(id);
+
+        if (!element) return;
+
+        element.addEventListener("keypress", function (e) {
+
+            if (e.key === "Enter") {
+
+                e.preventDefault();
+
+                saveProduct();
+
+            }
+
+        });
+
+    });
+
+    // Initial Product Load
+    if (typeof loadProducts === "function") {
+
+        loadProducts();
+
+    }
+
+});
+
+//==========================================
+// Billing Integration
+//==========================================
+
+function loadInvoiceProducts() {
+
+    const selects = document.querySelectorAll(".invoiceProduct");
+
+    selects.forEach(select => {
+
+        const currentValue = select.value;
+
+        select.innerHTML = `<option value="">Select Product</option>`;
+
+        productCache.forEach(product => {
+
+            select.innerHTML += `
+                <option value="${product.product}">
+                    ${product.product}
+                </option>
+            `;
+
+        });
+
+        select.value = currentValue;
+
+    });
+
+}
+
+//==========================================
+// End of stock.js
+//==========================================
