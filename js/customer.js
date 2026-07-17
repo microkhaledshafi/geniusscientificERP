@@ -32,13 +32,13 @@ function renderCustomers(customers) {
     customers.forEach(c => {
 
         body.innerHTML += `
-        <tr>
-            <td>${c.name ?? ""}</td>
-            <td>${c.phone ?? ""}</td>
-            <td>${c.gst ?? ""}</td>
-            <td>${c.opening_balance ?? 0}</td>
-
-            <td>
+       <tr>
+    <td>${item.name}</td>
+    <td>${item.phone || ""}</td>
+    <td>${item.address || ""}</td>
+    <td>${item.gst || ""}</td>
+    <td>₹ ${Number(item.opening_balance || 0).toFixed(2)}
+    </td>
                 <button onclick="editCustomer(${c.id})">✏️</button>
                 <button onclick="deleteCustomer(${c.id})">🗑️</button>
             </td>
