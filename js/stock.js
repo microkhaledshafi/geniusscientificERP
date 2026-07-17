@@ -41,6 +41,32 @@ async function loadProducts() {
     }
 
 }
+function loadInvoiceProducts() {
+
+    const selects = document.querySelectorAll(".productSelect");
+
+    selects.forEach(select => {
+
+        const current = select.value;
+
+        select.innerHTML =
+            '<option value="">Select Product</option>';
+
+        productCache.forEach(product => {
+
+            select.innerHTML += `
+                <option value="${product.id}">
+                    ${product.product}
+                </option>
+            `;
+
+        });
+
+        select.value = current;
+
+    });
+
+}
 
 //==========================================
 // Render Product Table
@@ -231,7 +257,9 @@ async function saveProduct() {
 
 function editProduct(id) {
 
-    const product = productCache.find(p => p.id == id);
+    const product = productCache.find(
+    p => Number(p.id) === Number(id)
+);
 
     if (!product) return;
 
