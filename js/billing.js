@@ -1,28 +1,33 @@
-// ===============================
+//======================================
 // Genius Scientific ERP
-// billing.js
-// ===============================
+// Billing Module
+//======================================
 
 let invoiceItems = [];
 
-document.addEventListener("DOMContentLoaded", () => {
+function initialiseBilling() {
+
     loadInvoiceCustomers();
-});
+
+    document.getElementById("invoiceDate").value =
+        new Date().toISOString().substring(0,10);
+
+}
 
 function loadInvoiceCustomers() {
 
-    const customerSelect = document.getElementById("invoiceCustomer");
+    const ddl = document.getElementById("invoiceCustomer");
 
-    if (!customerSelect) return;
+    if(!ddl) return;
 
-    customerSelect.innerHTML =
-        '<option value="">Select Customer</option>';
+    ddl.innerHTML =
+    '<option value="">Select Customer</option>';
 
-    if (!window.customerCache) return;
+    if(typeof customerCache==="undefined") return;
 
-    customerCache.forEach(c => {
+    customerCache.forEach(c=>{
 
-        customerSelect.innerHTML += `
+        ddl.innerHTML += `
         <option value="${c.id}">
             ${c.name}
         </option>`;
@@ -31,17 +36,19 @@ function loadInvoiceCustomers() {
 
 }
 
-function addInvoiceRow() {
+function addInvoiceRow(){
 
-    const tbody = document.getElementById("invoiceBody");
+    const body =
+        document.getElementById("invoiceBody");
 
-    if (!tbody) return;
+    if(!body) return;
 
-    let options = '<option value="">Select Product</option>';
+    let options =
+    '<option value="">Select Product</option>';
 
-    if (window.productCache) {
+    if(typeof productCache!=="undefined"){
 
-        productCache.forEach(p => {
+        productCache.forEach(p=>{
 
             options += `
             <option value="${p.id}">
@@ -52,137 +59,69 @@ function addInvoiceRow() {
 
     }
 
-    const row = tbody.insertRow();
+    const row = body.insertRow();
 
     row.innerHTML = `
 
 <td>
+
 <select onchange="productChanged(this)">
+
 ${options}
+
 </select>
+
 </td>
 
 <td>
+
 <input
 type="number"
 value="1"
 min="1"
 oninput="calculateInvoice()">
+
 </td>
 
 <td>
+
 <input
 type="number"
 class="rate"
 readonly>
+
 </td>
 
 <td>
+
 <input
 type="number"
 class="gst"
 readonly>
+
 </td>
 
 <td>
+
 <input
 type="number"
-class="total"
+class="lineTotal"
 readonly>
+
 </td>
 
 <td>
-<button onclick="removeInvoiceRow(this)">
+
+<button
+type="button"
+onclick="removeInvoiceRow(this)">
+
 Delete
+
 </button>
+
 </td>
 
 `;
-
-}
-
-function removeInvoiceRow(btn){
-
-    btn.parentElement.parentElement.remove();
-
-    calculateInvoice();
-
-}
-
-function productChanged(select){
-
-    const row = select.parentElement.parentElement;
-
-    const product = productCache.find(
-        p => Number(p.id) === Number(select.value)
-    );
-
-    if(!product) return;
-
-    row.querySelector(".rate").value =
-        Number(product.selling_rate || 0);
-
-    row.querySelector(".gst").value =
-        Number(product.gst || 0);
-
-    calculateInvoice();
-
-}
-
-function calculateInvoice(){
-
-    let subtotal = 0;
-
-    let gstTotal = 0;
-
-    document
-        .querySelectorAll("#invoiceBody tr")
-        .forEach(row=>{
-
-            const qty =
-                Number(row.cells[1].querySelector("input").value);
-
-            const rate =
-                Number(row.querySelector(".rate").value);
-
-            const gst =
-                Number(row.querySelector(".gst").value);
-
-            const line =
-                qty*rate;
-
-            row.querySelector(".total").value =
-                line.toFixed(2);
-
-            subtotal += line;
-
-            gstTotal +=
-                line*gst/100;
-
-        });
-
-    const discount =
-        Number(document.getElementById("invoiceDiscount").value||0);
-
-    document.getElementById("subTotal").innerHTML =
-        subtotal.toFixed(2);
-
-    document.getElementById("gstTotal").innerHTML =
-        gstTotal.toFixed(2);
-
-    document.getElementById("grandTotal").innerHTML =
-        (subtotal+gstTotal-discount).toFixed(2);
-
-}
-
-async function saveInvoice(){
-
-    alert("Invoice Save will be connected after invoice table is created in Supabase.");
-
-}
-
-function printInvoice(){
-
-    window.print();
 
 }
