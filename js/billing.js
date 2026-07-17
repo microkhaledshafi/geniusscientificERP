@@ -1,33 +1,58 @@
 // ========================================
 // Genius Scientific ERP
-// billing.js
+// Billing Module - Part 1
 // ========================================
 
-let invoiceItems = [];
+let invoiceProducts = [];
 
-window.addEventListener("load", () => {
-
-    initialiseBilling();
-
-});
+window.addEventListener("load", initialiseBilling);
 
 async function initialiseBilling() {
-
-    await loadInvoiceCustomers();
 
     generateInvoiceNumber();
 
     document.getElementById("invoiceDate").value =
         new Date().toISOString().split("T")[0];
 
+    loadInvoiceCustomers();
+
+    await loadProducts();
+
 }
 
-async function loadInvoiceCustomers() {
+function generateInvoiceNumber() {
 
-    const { data, error } = await supabaseClient
-        .from("Customers")
-        .select("*")
-        .order("customer_name");
+    document.getElementById("invoiceNumber").value =
+        "INV-" + Date.now().toString().slice(-6);
+
+}
+
+function loadInvoiceCustomers() {
+
+    const select =
+        document.getElementById("invoiceCustomer");
+
+    select.innerHTML =
+        '<option value="">Select Customer</option>';
+
+    customerCache.forEach(c => {
+
+        select.innerHTML +=
+            `<option value="${c.id}">
+                ${c.name}
+            </option>`;
+
+    });
+
+}
+
+async function loadProducts() {
+
+    const { data, error } =
+        await supabaseClient
+            .from("products")
+            .select("*")
+            .order("product");
 
     if (error) {
 
@@ -37,29 +62,106 @@ async function loadInvoiceCustomers() {
 
     }
 
-    const select = document.getElementById("invoiceCustomer");
+    invoiceProducts = data;
 
-    select.innerHTML =
-        '<option value="">Select Customer</option>';
+}
 
-    data.forEach(customer => {
+function addInvoiceRow() {
 
-        select.innerHTML += `
-            <option value="${customer.id}">
-                ${customer.customer_name}
+    let options = "";
+
+    invoiceProducts.forEach(p => {
+
+        options += `
+            <option value="${p.id}">
+                ${p.product}
             </option>
         `;
 
     });
 
+    document.getElementById("invoiceBody").innerHTML += `
+
+<tr>
+
+<td>
+
+<select onchange="productChanged(this)">
+
+<option value="">Select Product</option>
+
+${options}
+
+</select>
+
+</td>
+
+<td>
+
+<input
+type="number"
+value="1"
+min="1"
+style="width:70px">
+
+</td>
+
+<td>
+
+<input
+type="number"
+readonly>
+
+</td>
+
+<td>
+
+<input
+type="number"
+readonly>
+
+</td>
+
+<td>
+
+<input
+type="number"
+readonly>
+
+</td>
+
+<td>
+
+<button onclick="this.parentNode.parentNode.remove()">
+
+❌
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
 }
 
-function generateInvoiceNumber() {
+function productChanged(select) {
 
-    const invoiceNo =
-        "INV-" + Date.now().toString().slice(-6);
+    const product =
+        invoiceProducts.find(p => p.id == select.value);
 
-    document.getElementById("invoiceNumber").value =
-        invoiceNo;
+    if (!product) return;
+
+    const row = select.parentNode.parentNode;
+
+    row.cells[2].children[0].value =
+        product.selling_rate;
+
+    row.cells[3].children[0].value =
+        product.gst;
+
+    row.cells[4].children[0].value =
+        product.selling_rate;
 
 }
