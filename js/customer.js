@@ -116,17 +116,7 @@ function updateCustomerCount() {
 
 }
 
-//==========================================
-// Refresh Billing Customer Dropdown
-//==========================================
 
-function refreshBillingCustomers() {
-
-    if (typeof loadInvoiceCustomers === "function") {
-
-        loadInvoiceCustomers();
-
-    }
 //==========================================
 // Save Customer
 //==========================================
@@ -408,4 +398,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 });
-}
