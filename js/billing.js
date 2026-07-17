@@ -86,6 +86,10 @@ function addInvoiceRow(){
     const row = body.insertRow();
 
     row.innerHTML = `
+...
+`;
+
+loadInvoiceProducts();
 
 <td>
 
@@ -164,7 +168,15 @@ function productChanged(select){
 
     const product = productCache.find(p=>Number(p.id)===id);
 
-    if(!product) return;
+    if (!product) {
+
+    row.querySelector(".rate").value = 0;
+    row.querySelector(".gst").value = 0;
+
+    calculateInvoice();
+
+    return;
+}
 
     row.querySelector(".rate").value =
         Number(product.selling_rate || 0);
@@ -281,27 +293,34 @@ function printInvoice() {
 // Auto Initialize Billing
 //======================================
 
+//======================================
+// Auto Initialize Billing
+//======================================
+
 document.addEventListener("DOMContentLoaded", async () => {
 
     if (document.getElementById("invoiceDate")) {
+
         document.getElementById("invoiceDate").value =
             new Date().toISOString().split("T")[0];
+
     }
 
-    if (typeof loadInvoiceCustomers === "function") {
-        loadInvoiceCustomers();
-    }
+    if (typeof loadCustomers === "function") {
 
-});
+        await loadCustomers();
+
+    }
 
     if (typeof loadProducts === "function") {
 
-        loadProducts();
+        await loadProducts();
 
     }
 
-});
+    loadInvoiceCustomers();
 
+});
 //======================================
 // Refresh Customer Dropdown
 //======================================
