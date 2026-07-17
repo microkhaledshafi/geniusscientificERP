@@ -1,99 +1,60 @@
-// Genius Scientific ERP v5.2
-// Stock Module
+// ========================================
+// Genius Scientific ERP v7
+// app.js
+// ========================================
 
-async function saveProduct() {
+let currentPage = "dashboard";
 
-    const product = {
-        product: document.getElementById("productName").value,
-        mrp: Number(document.getElementById("productMRP").value),
-        rate: Number(document.getElementById("productRate").value),
-        gst: Number(document.getElementById("productGST").value),
-        lot: document.getElementById("productLot").value,
-        expiry: document.getElementById("productExpiry").value
-    };
+function showPage(page) {
 
-    if (!product.product) {
-        alert("Enter Product Name");
-        return;
-    }
-
-    const { error } = await supabaseClient
-        .from("products")
-        .insert([product]);
-
-    if (error) {
-        console.error(error);
-        alert(error.message);
-        return;
-    }
-
-    alert("Product Saved");
-
-    clearProductForm();
-
-    loadProducts();
-
-}
-
-function clearProductForm() {
-
-    document.getElementById("productName").value = "";
-    document.getElementById("productMRP").value = "";
-    document.getElementById("productRate").value = "";
-    document.getElementById("productGST").value = "";
-    document.getElementById("productLot").value = "";
-    document.getElementById("productExpiry").value = "";
-
-}
-
-async function loadProducts() {
-
-    const { data, error } =
-        await supabaseClient
-            .from("products")
-            .select("*")
-            .order("product");
-
-    if (error) {
-
-        console.error(error);
-
-        return;
-
-    }
-
-    const body = document.getElementById("stockBody");
-
-    body.innerHTML = "";
-
-    data.forEach(item => {
-
-        body.innerHTML += `
-
-<tr>
-
-<td>${item.product}</td>
-
-<td>${item.mrp}</td>
-
-<td>${item.rate}</td>
-
-<td>${item.gst}</td>
-
-<td>${item.lot}</td>
-
-<td>${item.expiry}</td>
-
-<td>-</td>
-
-</tr>
-
-`;
-
+    document.querySelectorAll(".page").forEach(section => {
+        section.style.display = "none";
     });
 
-    document.getElementById("totalProducts").innerText = data.length;
+    const target = document.getElementById(page);
+
+    if (target) {
+        target.style.display = "block";
+        currentPage = page;
+    }
 
 }
 
-window.addEventListener("load", loadProducts);
+function toast(message, color = "#198754") {
+
+    let toast = document.getElementById("toast");
+
+    if (!toast) {
+
+        toast = document.createElement("div");
+
+        toast.id = "toast";
+
+        toast.style.position = "fixed";
+        toast.style.right = "20px";
+        toast.style.bottom = "20px";
+        toast.style.padding = "12px 20px";
+        toast.style.borderRadius = "8px";
+        toast.style.color = "#fff";
+        toast.style.fontWeight = "bold";
+        toast.style.zIndex = "9999";
+
+        document.body.appendChild(toast);
+
+    }
+
+    toast.style.background = color;
+    toast.innerText = message;
+    toast.style.display = "block";
+
+    setTimeout(() => {
+        toast.style.display = "none";
+    }, 2500);
+
+}
+
+window.addEventListener("load", () => {
+
+    showPage("dashboard");
+
+});
