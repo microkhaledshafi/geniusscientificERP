@@ -1,11 +1,14 @@
-// ===============================
-// Genius Scientific ERP
+// ========================================
+// Genius Scientific ERP v7
 // Customer Module
-// ===============================
+// ========================================
 
 let editCustomerId = null;
 let customerCache = [];
 
+// ----------------------------
+// Load Customers
+// ----------------------------
 async function loadCustomers() {
 
     const { data, error } = await supabaseClient
@@ -15,14 +18,19 @@ async function loadCustomers() {
 
     if (error) {
         console.error(error);
+        alert(error.message);
         return;
     }
 
-    customerCache = data;
-    renderCustomers(data);
+    customerCache = data || [];
+
+    renderCustomers(customerCache);
 
 }
 
+// ----------------------------
+// Render Customers
+// ----------------------------
 function renderCustomers(customers) {
 
     const body = document.getElementById("customerBody");
@@ -47,25 +55,26 @@ function renderCustomers(customers) {
 
     });
 
-    document.getElementById("totalCustomers").innerText = customers.length;
+    document.getElementById("totalCustomers").innerText =
+        customers.length;
 
 }
 
+// ----------------------------
+// Save Customer
+// ----------------------------
 async function saveCustomer() {
 
     const customer = {
 
         name: document.getElementById("customerName").value.trim(),
-
         phone: document.getElementById("customerPhone").value.trim(),
-
         email: document.getElementById("customerEmail").value.trim(),
-
         gst: document.getElementById("customerGST").value.trim(),
-
         address: document.getElementById("customerAddress").value.trim(),
-
-        opening_balance: Number(document.getElementById("customerOpening").value || 0)
+        opening_balance: Number(
+            document.getElementById("customerOpening").value || 0
+        )
 
     };
 
@@ -77,26 +86,25 @@ async function saveCustomer() {
 
     }
 
-    let data, error;
+    let error;
 
     if (editCustomerId === null) {
 
-        ({ data, error } = await supabaseClient
+        ({ error } = await supabaseClient
             .from("customers")
-            .insert([customer])
-            .select());
+            .insert([customer]));
 
     } else {
 
-        ({ data, error } = await supabaseClient
+        ({ error } = await supabaseClient
             .from("customers")
             .update(customer)
-            .eq("id", editCustomerId)
-            .select());
+            .eq("id", editCustomerId));
 
         editCustomerId = null;
 
-        document.getElementById("saveButtonCustomer").innerText = "Save Customer";
+        document.getElementById("saveButtonCustomer").innerText =
+            "Save Customer";
 
     }
 
@@ -114,6 +122,9 @@ async function saveCustomer() {
 
 }
 
+// ----------------------------
+// Edit Customer
+// ----------------------------
 function editCustomer(id) {
 
     const c = customerCache.find(x => x.id === id);
@@ -122,20 +133,36 @@ function editCustomer(id) {
 
     editCustomerId = id;
 
-    document.getElementById("customerName").value = c.name;
-    document.getElementById("customerPhone").value = c.phone;
-    document.getElementById("customerEmail").value = c.email;
-    document.getElementById("customerGST").value = c.gst;
-    document.getElementById("customerAddress").value = c.address;
-    document.getElementById("customerOpening").value = c.opening_balance;
+    document.getElementById("customerName").value =
+        c.name || "";
 
-    document.getElementById("saveButtonCustomer").innerText = "Update Customer";
+    document.getElementById("customerPhone").value =
+        c.phone || "";
+
+    document.getElementById("customerEmail").value =
+        c.email || "";
+
+    document.getElementById("customerGST").value =
+        c.gst || "";
+
+    document.getElementById("customerAddress").value =
+        c.address || "";
+
+    document.getElementById("customerOpening").value =
+        c.opening_balance || 0;
+
+    document.getElementById("saveButtonCustomer").innerText =
+        "Update Customer";
 
 }
 
+// ----------------------------
+// Delete Customer
+// ----------------------------
 async function deleteCustomer(id) {
 
-    if (!confirm("Delete Customer?")) return;
+    if (!confirm("Delete Customer?"))
+        return;
 
     const { error } = await supabaseClient
         .from("customers")
@@ -154,6 +181,9 @@ async function deleteCustomer(id) {
 
 }
 
+// ----------------------------
+// Search Customer
+// ----------------------------
 function searchCustomer() {
 
     const text = document
@@ -161,40 +191,38 @@ function searchCustomer() {
         .value
         .toLowerCase();
 
-    renderCustomers(
+    const filtered = customerCache.filter(c =>
 
-        customerCache.filter(c =>
-
-            c.name.toLowerCase().includes(text)
-
-        )
+        (c.name || "").toLowerCase().includes(text) ||
+        (c.phone || "").toLowerCase().includes(text) ||
+        (c.address || "").toLowerCase().includes(text)
 
     );
 
+    renderCustomers(filtered);
+
 }
 
+// ----------------------------
+// Clear Form
+// ----------------------------
 function clearCustomerForm() {
 
-    [
+    document.getElementById("customerName").value = "";
+    document.getElementById("customerPhone").value = "";
+    document.getElementById("customerEmail").value = "";
+    document.getElementById("customerGST").value = "";
+    document.getElementById("customerAddress").value = "";
+    document.getElementById("customerOpening").value = "";
 
-        "customerName",
+    editCustomerId = null;
 
-        "customerPhone",
-
-        "customerEmail",
-
-        "customerGST",
-
-        "customerAddress",
-
-        "customerOpening"
-
-    ].forEach(id => {
-
-        document.getElementById(id).value = "";
-
-    });
+    document.getElementById("saveButtonCustomer").innerText =
+        "Save Customer";
 
 }
 
+// ----------------------------
+// Initialise
+// ----------------------------
 window.addEventListener("load", loadCustomers);
