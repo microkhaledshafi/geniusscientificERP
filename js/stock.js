@@ -124,36 +124,7 @@ async function saveProduct() {
 
 }
 
-    if (product.product === "") {
-
-        alert("Please enter Product Name");
-        return;
-
-    }
-
-    let result;
-
-    if (editProductId === null) {
-
-        result = await supabaseClient
-            .from("products")
-            .insert([product]);
-
-    } else {
-
-        result = await supabaseClient
-            .from("products")
-            .update(product)
-            .eq("id", editProductId);
-
-    }
-
-    if (result.error) {
-
-        alert(result.error.message);
-        return;
-
-    }
+    
 
     clearProductForm();
 
