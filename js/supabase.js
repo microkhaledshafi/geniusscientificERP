@@ -5,7 +5,7 @@
 
 // Replace with your own values
 const SUPABASE_URL = "https://cxssryhesrgomcdxddwn.supabase.co";
-const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+const SUPABASE_ANON_KEY = "sb_publishable_QiNQzM7U5l6mJpbHIN4UJQ_nv_90lED";
 
 //==========================================
 // Create Supabase Client
