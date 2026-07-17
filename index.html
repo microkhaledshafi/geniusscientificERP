@@ -25,11 +25,17 @@
 
 <aside class="sidebar">
 
+    <!-- ========================================= -->
+<!-- Sidebar -->
+<!-- ========================================= -->
+
+<aside class="sidebar">
+
     <div class="logo">
 
-        <h2>Genius Scientific ERP</h2>
+        <h2>🧪 Genius Scientific ERP</h2>
 
-        <p>Medical Business Management</p>
+        <p>Medical & Diagnostic ERP v2.0</p>
 
     </div>
 
@@ -43,8 +49,12 @@
             📦 Stock
         </button>
 
+        <button onclick="showPage('purchase')">
+            🚚 Purchase
+        </button>
+
         <button onclick="showPage('customers')">
-            👤 Customers
+            👥 Customers
         </button>
 
         <button onclick="showPage('billing')">
@@ -57,6 +67,10 @@
 
         <button onclick="showPage('reports')">
             📈 Reports
+        </button>
+
+        <button onclick="showPage('settings')">
+            ⚙️ Settings
         </button>
 
     </nav>
@@ -83,78 +97,214 @@ class="page">
 
 <div class="card">
 
-<h3>Total Products</h3>
+<h4>Total Products</h4>
 
-<h2 id="totalProducts">
-0
-</h2>
+<h2 id="totalProducts">0</h2>
 
-</div>
-
-<div class="card">
-
-<h3>Total Customers</h3>
-
-<h2 id="totalCustomers">
-0
-</h2>
+<p>Products in Inventory</p>
 
 </div>
 
 <div class="card">
 
-<h3>Today's Sales</h3>
+<h4>Total Customers</h4>
 
-<h2 id="todaySales">
-₹0.00
-</h2>
+<h2 id="totalCustomers">0</h2>
+
+<p>Registered Customers</p>
 
 </div>
 
 <div class="card">
 
-<h3>Outstanding Amount</h3>
+<h4>Today's Sales</h4>
 
-<h2 id="outstanding">
-₹0.00
-</h2>
+<h2 id="todaySales">₹0.00</h2>
+
+<p>Current Day Collection</p>
+
+</div>
+
+<div class="card">
+
+<h4>Outstanding</h4>
+
+<h2 id="outstanding">₹0.00</h2>
+
+<p>Pending Payments</p>
 
 </div>
 
 </div>
+
+<br>
+
+<div class="cards">
+
+<div class="card">
+
+<h4>Low Stock</h4>
+
+<h2 id="lowStockCount">0</h2>
+
+<p>Products Below Minimum Level</p>
+
+</div>
+
+<div class="card">
+
+<h4>Expiring Soon</h4>
+
+<h2 id="expiryCount">0</h2>
+
+<p>Within Next 90 Days</p>
+
+</div>
+
+<div class="card">
+
+<h4>Today's Invoices</h4>
+
+<h2 id="todayInvoices">0</h2>
+
+<p>Invoices Generated</p>
+
+</div>
+
+<div class="card">
+
+<h4>Monthly Sales</h4>
+
+<h2 id="monthlySales">₹0.00</h2>
+
+<p>Current Month</p>
+
+</div>
+
+</div>
+
+<br>
 
 <div class="tableCard">
 
-<h2>Welcome to Genius Scientific ERP</h2>
+<h2>Quick Actions</h2>
 
-<p>
+<div class="quickActions">
 
-Professional ERP for
+<button onclick="showPage('stock')">
 
-</p>
+➕ Add Product
 
-<ul>
+</button>
 
-<li>Stock Management</li>
+<button onclick="showPage('purchase')">
 
-<li>Billing & GST Invoice</li>
+📦 Purchase Entry
 
-<li>Customer Management</li>
+</button>
 
-<li>Payment Tracking</li>
+<button onclick="showPage('billing')">
 
-<li>Sales Reports</li>
+🧾 Create Invoice
 
-<li>Inventory Reports</li>
+</button>
 
-</ul>
+<button onclick="showPage('customers')">
+
+👤 Add Customer
+
+</button>
+
+<button onclick="showPage('payments')">
+
+💰 Receive Payment
+
+</button>
+
+</div>
+
+</div>
+
+<br>
+
+<div class="tableCard">
+
+<h2>Recent Activity</h2>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Date</th>
+
+<th>Type</th>
+
+<th>Description</th>
+
+<th>Amount</th>
+
+</tr>
+
+</thead>
+
+<tbody id="recentActivityBody">
+
+<tr>
+
+<td colspan="4" style="text-align:center;">
+
+No activity found
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
 
 </div>
 
 </section>
 
 <!-- ========================================= -->
-<!-- Stock Page Starts Here -->
+<!-- Purchase Page (Placeholder) -->
+<!-- ========================================= -->
+
+<section
+id="purchase"
+class="page"
+style="display:none;">
+
+<h1>Purchase Management</h1>
+
+<div class="tableCard">
+
+<h2>Coming in Phase 2</h2>
+
+<ul>
+
+<li>Supplier Management</li>
+
+<li>Purchase Entry</li>
+
+<li>Batch-wise Stock Addition</li>
+
+<li>Purchase Return</li>
+
+<li>Purchase Register</li>
+
+<li>GST Purchase Report</li>
+
+</ul>
+
+</div>
+
+</section>
+<!-- ========================================= -->
+<!-- STOCK MANAGEMENT -->
 <!-- ========================================= -->
 
 <section
@@ -170,70 +320,45 @@ style="display:none;">
 
 <div class="formGrid">
 
-<input
-id="productName"
-placeholder="Product Name">
+<input id="productName" placeholder="Product Name">
 
-<input
-id="manufacturer"
-placeholder="Manufacturer">
+<input id="manufacturer" placeholder="Manufacturer">
 
-<input
-id="category"
-placeholder="Category">
+<input id="category" placeholder="Category">
 
-<input
-id="lot"
-placeholder="Lot Number">
+<input id="hsn" placeholder="HSN Code">
 
-<input
-id="batch"
-placeholder="Batch Number">
+<input id="lot" placeholder="Lot Number">
 
-<input
-id="hsn"
-placeholder="HSN Code">
+<input id="batch" placeholder="Batch Number">
 
-<input
-id="purchaseRate"
-type="number"
-placeholder="Purchase Rate">
+<input id="expiry" type="date">
 
-<input
-id="sellingRate"
-type="number"
-placeholder="Selling Rate">
+<input id="unit" placeholder="Unit / Pack">
 
-<input
-id="mrp"
-type="number"
-placeholder="MRP">
+<input id="purchaseRate" type="number" step="0.01" placeholder="Purchase Rate">
 
-<input
-id="gst"
-type="number"
-placeholder="GST %">
+<input id="sellingRate" type="number" step="0.01" placeholder="Selling Rate">
 
-<input
-id="quantity"
-type="number"
-placeholder="Quantity">
+<input id="mrp" type="number" step="0.01" placeholder="MRP">
 
-<input
-id="unit"
-placeholder="Unit">
+<input id="gst" type="number" step="0.01" placeholder="GST %">
 
-<input
-id="expiry"
-type="date">
+<input id="quantity" type="number" placeholder="Opening Quantity">
 
 </div>
 
-<button
-id="saveButtonProduct"
-onclick="saveProduct()">
+<br>
 
-Save Product
+<button onclick="saveProduct()">
+
+💾 Save Product
+
+</button>
+
+<button onclick="resetProductForm()">
+
+🔄 Reset
 
 </button>
 
@@ -241,11 +366,11 @@ Save Product
 
 <div class="tableCard">
 
-<h2>Product List</h2>
+<h2>Product Inventory</h2>
 
 <input
 id="productSearch"
-placeholder="Search Product..."
+placeholder="Search Product / Batch / HSN..."
 onkeyup="searchProduct()">
 
 <br><br>
@@ -262,25 +387,25 @@ onkeyup="searchProduct()">
 
 <th>Category</th>
 
-<th>Batch</th>
+<th>HSN</th>
 
 <th>Lot</th>
 
-<th>HSN</th>
+<th>Batch</th>
+
+<th>Expiry</th>
+
+<th>MRP</th>
 
 <th>Purchase</th>
 
 <th>Selling</th>
-
-<th>MRP</th>
 
 <th>GST</th>
 
 <th>Qty</th>
 
 <th>Unit</th>
-
-<th>Expiry</th>
 
 <th>Action</th>
 
@@ -299,7 +424,7 @@ onkeyup="searchProduct()">
 </section>
 
 <!-- ========================================= -->
-<!-- Customer Management -->
+<!-- CUSTOMER MANAGEMENT -->
 <!-- ========================================= -->
 
 <section
@@ -330,32 +455,31 @@ placeholder="Email">
 
 <input
 id="customerGST"
-placeholder="GST Number">
+placeholder="GSTIN">
 
 <input
 id="customerAddress"
-placeholder="Address">
+placeholder="Complete Address">
 
 <input
 id="customerOpening"
 type="number"
+step="0.01"
 placeholder="Opening Balance">
 
 </div>
 
-<button
-id="saveButtonCustomer"
-onclick="saveCustomer()">
+<br>
 
-Save Customer
+<button onclick="saveCustomer()">
+
+💾 Save Customer
 
 </button>
 
-<button
-type="button"
-onclick="resetCustomerForm()">
+<button onclick="resetCustomerForm()">
 
-Reset
+🔄 Reset
 
 </button>
 
@@ -363,7 +487,7 @@ Reset
 
 <div class="tableCard">
 
-<h2>Customer List</h2>
+<h2>Customer Directory</h2>
 
 <input
 id="customerSearch"
@@ -384,7 +508,7 @@ onkeyup="searchCustomer()">
 
 <th>Email</th>
 
-<th>GST</th>
+<th>GSTIN</th>
 
 <th>Address</th>
 
@@ -405,9 +529,8 @@ onkeyup="searchCustomer()">
 </div>
 
 </section>
-
 <!-- ========================================= -->
-<!-- Billing -->
+<!-- BILLING -->
 <!-- ========================================= -->
 
 <section
@@ -415,53 +538,111 @@ id="billing"
 class="page"
 style="display:none;">
 
-<h1>Create Invoice</h1>
+<h1>GST Billing</h1>
+
+<!-- Invoice Header -->
 
 <div class="tableCard">
 
+<h2>Invoice Details</h2>
+
 <div class="formGrid">
+
+<div>
+
+<label>Invoice No.</label>
 
 <input
 id="invoiceNumber"
-placeholder="Invoice Number">
+readonly>
+
+</div>
+
+<div>
+
+<label>Invoice Date</label>
 
 <input
 id="invoiceDate"
 type="date">
 
+</div>
+
+<div>
+
+<label>Customer</label>
+
 <select id="invoiceCustomer">
 
-<option value="">
-
-Select Customer
-
-</option>
+<option value="">Select Customer</option>
 
 </select>
 
 </div>
 
+<div>
+
+<label>Customer GST</label>
+
+<input
+id="customerGSTNo"
+readonly>
+
 </div>
+
+<div>
+
+<label>Customer Address</label>
+
+<input
+id="customerAddressBill"
+readonly>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- Invoice Items -->
 
 <div class="tableCard">
 
 <h2>Invoice Items</h2>
 
-<table>
+<div style="overflow-x:auto;">
+
+<table class="invoiceTable">
 
 <thead>
 
 <tr>
 
-<th style="width:35%">Product</th>
+<th>Sr</th>
+
+<th style="min-width:220px;">Product</th>
+
+<th>HSN</th>
+
+<th>Pack</th>
+
+<th>Batch</th>
+
+<th>Expiry</th>
+
+<th>MRP</th>
 
 <th>Qty</th>
 
+<th>Free</th>
+
 <th>Rate</th>
+
+<th>Disc %</th>
 
 <th>GST</th>
 
-<th>Total</th>
+<th>Amount</th>
 
 <th>Action</th>
 
@@ -469,11 +650,13 @@ Select Customer
 
 </thead>
 
-<tbody id="invoiceBody">
+<tbody id="invoiceItemsBody">
 
 </tbody>
 
 </table>
+
+</div>
 
 <br>
 
@@ -487,9 +670,7 @@ onclick="addInvoiceRow()">
 
 </div>
 
-<!-- ========================================= -->
 <!-- Invoice Summary -->
-<!-- ========================================= -->
 
 <div class="tableCard">
 
@@ -501,9 +682,10 @@ onclick="addInvoiceRow()">
 
 <label>Sub Total</label>
 
-<h3>
-₹ <span id="subTotal">0.00</span>
-</h3>
+<input
+id="subTotal"
+readonly
+value="0.00">
 
 </div>
 
@@ -512,21 +694,31 @@ onclick="addInvoiceRow()">
 <label>Discount</label>
 
 <input
-id="invoiceDiscount"
-type="number"
-value="0"
-min="0"
-oninput="calculateInvoice()">
+id="discountTotal"
+readonly
+value="0.00">
 
 </div>
 
 <div>
 
-<label>GST Total</label>
+<label>CGST</label>
 
-<h3>
-₹ <span id="gstTotal">0.00</span>
-</h3>
+<input
+id="cgstTotal"
+readonly
+value="0.00">
+
+</div>
+
+<div>
+
+<label>SGST</label>
+
+<input
+id="sgstTotal"
+readonly
+value="0.00">
 
 </div>
 
@@ -534,9 +726,10 @@ oninput="calculateInvoice()">
 
 <label>Grand Total</label>
 
-<h2 style="color:#0B5ED7;">
-₹ <span id="grandTotal">0.00</span>
-</h2>
+<input
+id="grandTotal"
+readonly
+value="0.00">
 
 </div>
 
@@ -554,7 +747,15 @@ onclick="saveInvoice()">
 
 <button
 type="button"
-onclick="printInvoice()">
+onclick="initialiseBilling()">
+
+🔄 New Invoice
+
+</button>
+
+<button
+type="button"
+onclick="printInvoice(document.getElementById('invoiceNumber').value)">
 
 🖨 Print Invoice
 
@@ -562,10 +763,62 @@ onclick="printInvoice()">
 
 </div>
 
-</section>
+<!-- Invoice History -->
 
+<div class="tableCard">
+
+<h2>Invoice History</h2>
+
+<input
+id="invoiceSearch"
+placeholder="Search Invoice..."
+onkeyup="searchInvoice()">
+
+<br><br>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Invoice No.</th>
+
+<th>Customer</th>
+
+<th>Date</th>
+
+<th>Grand Total</th>
+
+<th>Status</th>
+
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody id="invoiceHistoryBody">
+
+<tr>
+
+<td colspan="6" style="text-align:center;">
+
+No invoices available
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</section>
 <!-- ========================================= -->
-<!-- Payments -->
+<!-- PAYMENTS -->
 <!-- ========================================= -->
 
 <section
@@ -573,40 +826,61 @@ id="payments"
 class="page"
 style="display:none;">
 
-<h1>Payments</h1>
+<h1>Payment Management</h1>
 
 <div class="tableCard">
 
-<h2>Receive Payment</h2>
+<h2>Receive Customer Payment</h2>
 
 <div class="formGrid">
 
+<div>
+<label>Customer</label>
 <select id="paymentCustomer">
+<option value="">Select Customer</option>
+</select>
+</div>
 
-<option value="">
+<div>
+<label>Payment Date</label>
+<input id="paymentDate" type="date">
+</div>
 
-Select Customer
+<div>
+<label>Amount</label>
+<input id="paymentAmount" type="number" step="0.01">
+</div>
 
-</option>
+<div>
+<label>Mode</label>
+<select id="paymentMode">
+
+<option>Cash</option>
+<option>UPI</option>
+<option>Cheque</option>
+<option>NEFT</option>
+<option>RTGS</option>
 
 </select>
+</div>
 
-<input
-id="paymentAmount"
-type="number"
-placeholder="Amount">
+<div>
+<label>Reference No.</label>
+<input id="paymentReference">
+</div>
 
-<input
-id="paymentDate"
-type="date">
+<div>
+<label>Remarks</label>
+<input id="paymentRemarks">
+</div>
 
 </div>
 
-<button
-type="button"
-onclick="savePayment()">
+<br>
 
-Receive Payment
+<button onclick="savePayment()">
+
+💰 Receive Payment
 
 </button>
 
@@ -616,6 +890,13 @@ Receive Payment
 
 <h2>Payment History</h2>
 
+<input
+id="paymentSearch"
+placeholder="Search Payment..."
+onkeyup="searchPayment()">
+
+<br><br>
+
 <table>
 
 <thead>
@@ -623,11 +904,10 @@ Receive Payment
 <tr>
 
 <th>Date</th>
-
 <th>Customer</th>
-
+<th>Mode</th>
+<th>Reference</th>
 <th>Amount</th>
-
 <th>Action</th>
 
 </tr>
@@ -645,7 +925,7 @@ Receive Payment
 </section>
 
 <!-- ========================================= -->
-<!-- Reports -->
+<!-- REPORTS -->
 <!-- ========================================= -->
 
 <section
@@ -659,41 +939,97 @@ style="display:none;">
 
 <div class="card">
 
-<h3>Total Sales</h3>
+<h4>Total Sales</h4>
 
 <h2 id="reportSales">
+
 ₹0.00
+
 </h2>
 
 </div>
 
 <div class="card">
 
-<h3>Total Products</h3>
+<h4>Total Purchase</h4>
 
-<h2 id="reportProducts">
-0
+<h2 id="reportPurchase">
+
+₹0.00
+
 </h2>
 
 </div>
 
 <div class="card">
 
-<h3>Total Customers</h3>
-
-<h2 id="reportCustomers">
-0
-</h2>
-
-</div>
-
-<div class="card">
-
-<h3>Outstanding Amount</h3>
+<h4>Total Outstanding</h4>
 
 <h2 id="reportOutstanding">
+
 ₹0.00
+
 </h2>
+
+</div>
+
+<div class="card">
+
+<h4>Low Stock</h4>
+
+<h2 id="reportLowStock">
+
+0
+
+</h2>
+
+</div>
+
+</div>
+
+<br>
+
+<div class="tableCard">
+
+<h2>Available Reports</h2>
+
+<div class="quickActions">
+
+<button onclick="salesReport()">
+
+📊 Sales Report
+
+</button>
+
+<button onclick="stockReport()">
+
+📦 Stock Report
+
+</button>
+
+<button onclick="customerLedger()">
+
+👤 Customer Ledger
+
+</button>
+
+<button onclick="expiryReport()">
+
+⏰ Expiry Report
+
+</button>
+
+<button onclick="gstReport()">
+
+🧾 GST Report
+
+</button>
+
+<button onclick="downloadExcel()">
+
+📥 Export Excel
+
+</button>
 
 </div>
 
@@ -701,42 +1037,172 @@ style="display:none;">
 
 <div class="tableCard">
 
-<h2>Reports</h2>
+<h2>Report Preview</h2>
+
+<div id="reportViewer">
+
+No report selected.
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ========================================= -->
+<!-- SETTINGS -->
+<!-- ========================================= -->
+
+<section
+id="settings"
+class="page"
+style="display:none;">
+
+<h1>Company Settings</h1>
+
+<div class="tableCard">
+
+<h2>Company Information</h2>
+
+<div class="formGrid">
+
+<input id="companyName" placeholder="Company Name">
+
+<input id="companyGST" placeholder="GSTIN">
+
+<input id="companyDL" placeholder="Drug Licence">
+
+<input id="companyPhone1" placeholder="Phone 1">
+
+<input id="companyPhone2" placeholder="Phone 2">
+
+<input id="companyEmail" placeholder="Email">
+
+<input id="companyWebsite" placeholder="Website">
+
+<input id="companyUPI" placeholder="UPI ID">
+
+<input id="companyBank" placeholder="Bank Name">
+
+<input id="companyAccount" placeholder="Account Number">
+
+<input id="companyIFSC" placeholder="IFSC Code">
+
+<input id="companyAddress" placeholder="Company Address">
+
+<textarea
+id="invoiceTerms"
+placeholder="Invoice Terms & Conditions"
+rows="4">
+
+</textarea>
+
+</div>
+
+<br>
+
+<button onclick="saveSettings()">
+
+💾 Save Settings
+
+</button>
+
+</div>
+
+<div class="tableCard">
+
+<h2>Invoice Logo</h2>
+
+<input
+type="file"
+id="companyLogo">
 
 <p>
 
-Sales, Stock, Customer Outstanding and
-Payment reports will be displayed here.
+(Logo upload will be enabled in the next update.)
 
 </p>
 
 </div>
 
 </section>
-
-</main>
-
-</div>
-
 <!-- ========================================= -->
-<!-- JavaScript Files -->
+<!-- JavaScript -->
 <!-- ========================================= -->
 
+<!-- Supabase Configuration -->
 <script src="js/supabase.js"></script>
 
+<!-- Core Application -->
 <script src="js/app.js"></script>
 
+<!-- Shared Utility Functions -->
+<script src="js/billingUtils.js"></script>
+
+<!-- ERP Modules -->
 <script src="js/stock.js"></script>
 
 <script src="js/customer.js"></script>
 
 <script src="js/billing.js"></script>
 
+<script src="js/invoicePrint.js"></script>
+
 <script src="js/payment.js"></script>
 
 <script src="js/report.js"></script>
 
+<script src="js/settings.js"></script>
+
+<script>
+
+// ===================================
+// ERP INITIALIZATION
+// ===================================
+
+document.addEventListener("DOMContentLoaded", async () => {
+
+    try{
+
+        console.log("Starting Genius Scientific ERP...");
+
+        if(typeof initialiseBilling==="function")
+            await initialiseBilling();
+
+        if(typeof loadProducts==="function")
+            await loadProducts();
+
+        if(typeof loadCustomers==="function")
+            await loadCustomers();
+
+        if(typeof loadInvoiceHistory==="function")
+            await loadInvoiceHistory();
+
+        if(typeof loadPayments==="function")
+            await loadPayments();
+
+        if(typeof loadDashboard==="function")
+            await loadDashboard();
+
+        if(typeof loadSettings==="function")
+            await loadSettings();
+
+        console.log("ERP Loaded Successfully");
+
+    }
+
+    catch(err){
+
+        console.error(err);
+
+        alert("ERP Startup Error : " + err.message);
+
+    }
+
+});
+
+</script>
+
 </body>
 
 </html>
-
