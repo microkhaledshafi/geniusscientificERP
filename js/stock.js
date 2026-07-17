@@ -126,16 +126,6 @@ async function saveProduct() {
 
     
 
-    clearProductForm();
-
-    editProductId = null;
-
-    document.getElementById("saveButton").innerText = "Save Product";
-
-    loadProducts();
-
-}
-
 function clearProductForm() {
 
     [
