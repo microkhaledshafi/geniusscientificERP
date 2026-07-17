@@ -167,12 +167,26 @@ async function saveProduct() {
 
 function clearProductForm() {
 
-    document.getElementById("productName").value = "";
-    document.getElementById("productMRP").value = "";
-    document.getElementById("productRate").value = "";
-    document.getElementById("productGST").value = "";
-    document.getElementById("productLot").value = "";
-    document.getElementById("productExpiry").value = "";
+    [
+        "productName",
+        "manufacturer",
+        "category",
+        "hsn",
+        "purchaseRate",
+        "sellingRate",
+        "productMRP",
+        "productGST",
+        "quantity",
+        "unit",
+        "productLot",
+        "productExpiry"
+    ].forEach(id => {
+
+        const el = document.getElementById(id);
+
+        if (el) el.value = "";
+
+    });
 
 }
 
