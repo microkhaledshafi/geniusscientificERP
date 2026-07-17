@@ -127,6 +127,7 @@ function updateProductCount() {
         total.innerHTML = productCache.length;
 
     }
+}
     //==========================================
 // Save Product
 //==========================================
@@ -466,4 +467,3 @@ function getProductByName(name) {
 
 }
 
-}
