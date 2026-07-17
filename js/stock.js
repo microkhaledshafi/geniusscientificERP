@@ -69,28 +69,60 @@ function renderProducts(products){
 }
 async function saveProduct() {
 
-  const product = {
-    product: document.getElementById("productName").value.trim(),
-    manufacturer: document.getElementById("manufacturer").value.trim(),
-    category: document.getElementById("category").value.trim(),
-    hsn: document.getElementById("hsn").value.trim(),
+    const product = {
 
-    purchase_rate: Number(document.getElementById("purchaseRate").value),
+        product: document.getElementById("productName").value.trim(),
 
-    selling_rate: Number(document.getElementById("sellingRate").value),
+        manufacturer: document.getElementById("manufacturer").value.trim(),
 
-    mrp: Number(document.getElementById("productMRP").value),
+        category: document.getElementById("category").value.trim(),
 
-    gst: Number(document.getElementById("productGST").value),
+        hsn: document.getElementById("hsn").value.trim(),
 
-    quantity: Number(document.getElementById("quantity").value),
+        purchase_rate: Number(document.getElementById("purchaseRate").value || 0),
 
-    unit: document.getElementById("unit").value.trim(),
+        selling_rate: Number(document.getElementById("sellingRate").value || 0),
 
-    batch: document.getElementById("productLot").value,
+        mrp: Number(document.getElementById("productMRP").value || 0),
 
-    expiry: document.getElementById("productExpiry").value
-};
+        gst: Number(document.getElementById("productGST").value || 0),
+
+        quantity: Number(document.getElementById("quantity").value || 0),
+
+        unit: document.getElementById("unit").value.trim(),
+
+        batch: document.getElementById("productLot").value.trim(),
+
+        expiry: document.getElementById("productExpiry").value || null
+
+    };
+
+    console.log("Saving product:", product);
+
+    const { data, error } = await supabaseClient
+        .from("products")
+        .insert([product])
+        .select();
+
+    if (error) {
+
+        console.error(error);
+
+        alert(error.message);
+
+        return;
+
+    }
+
+    console.log(data);
+
+    alert("Product Saved Successfully");
+
+    clearProductForm();
+
+    loadProducts();
+
+}
 
     if (product.product === "") {
 
