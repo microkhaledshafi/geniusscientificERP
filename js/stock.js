@@ -34,9 +34,8 @@ function renderProducts(products){
 <tr>
 
 <td>${item.product}</td>
-
+<td>${item.quantity}</td>
 <td>${item.mrp}</td>
-
 <td>${item.selling_rate}</td>
 
 <td>${item.gst}</td>
