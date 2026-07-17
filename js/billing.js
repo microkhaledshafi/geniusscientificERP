@@ -18,24 +18,23 @@ function loadInvoiceCustomers() {
 
     const ddl = document.getElementById("invoiceCustomer");
 
-    if(!ddl) return;
+    if (!ddl) return;
 
-    ddl.innerHTML =
-    '<option value="">Select Customer</option>';
+    ddl.innerHTML = '<option value="">Select Customer</option>';
 
-    if(typeof customerCache==="undefined") return;
+    if (!Array.isArray(customerCache)) return;
 
-    customerCache.forEach(c=>{
+    customerCache.forEach(customer => {
 
         ddl.innerHTML += `
-        <option value="${c.id}">
-            ${c.name}
-        </option>`;
+            <option value="${customer.id}">
+                ${customer.name}
+            </option>
+        `;
 
     });
 
 }
-
 function addInvoiceRow(){
 
     const body =
