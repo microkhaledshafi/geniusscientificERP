@@ -35,6 +35,31 @@ function loadInvoiceCustomers() {
     });
 
 }
+function loadInvoiceProducts() {
+
+    const selects = document.querySelectorAll(".productSelect");
+
+    selects.forEach(select => {
+
+        const currentValue = select.value;
+
+        select.innerHTML = '<option value="">Select Product</option>';
+
+        productCache.forEach(product => {
+
+            select.innerHTML += `
+                <option value="${product.id}">
+                    ${product.product}
+                </option>
+            `;
+
+        });
+
+        select.value = currentValue;
+
+    });
+
+}
 function addInvoiceRow(){
 
     const body =
