@@ -1,82 +1,40 @@
 // ========================================
 // Genius Scientific ERP v7
-// supabase.js
+// Supabase Configuration
 // ========================================
 
-const SUPABASE_URL =
-    localStorage.getItem("SUPABASE_URL") || "";
+// Paste your values here
+const SUPABASE_URL = "https://YOUR_PROJECT.supabase.co";
+const SUPABASE_ANON_KEY = "YOUR_ANON_KEY";
 
-const SUPABASE_KEY =
-    localStorage.getItem("SUPABASE_KEY") || "";
+// Create client
+const supabaseClient = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+);
 
-let supabaseClient = null;
-
-function initialiseSupabase() {
-
-    if (!SUPABASE_URL || !SUPABASE_KEY) {
-
-        console.warn("Supabase not configured");
-
-        return false;
-
-    }
+// Test connection
+async function testConnection() {
 
     try {
 
-        supabaseClient = supabase.createClient(
-            SUPABASE_URL,
-            SUPABASE_KEY
-        );
+        const { error } = await supabaseClient
+            .from("products")
+            .select("id")
+            .limit(1);
 
-        console.log("Supabase Connected");
+        if (error) {
+            alert(error.message);
+            return;
+        }
 
-        return true;
+        alert("Supabase Connected Successfully");
 
-    }
-
-    catch (err) {
+    } catch (err) {
 
         console.error(err);
-
-        return false;
+        alert("Connection Failed");
 
     }
 
 }
-
-async function testConnection() {
-
-    if (!supabaseClient) {
-
-        initialiseSupabase();
-
-    }
-
-    if (!supabaseClient) {
-
-        toast("Configure Supabase First", "#dc3545");
-
-        return;
-
-    }
-
-    const { error } = await supabaseClient
-        .from("products")
-        .select("id")
-        .limit(1);
-
-    if (error) {
-
-        toast(error.message, "#dc3545");
-
-        console.error(error);
-
-        return;
-
-    }
-
-    toast("Supabase Connected");
-
-}
-
-window.addEventListener("load", initialiseSupabase);
