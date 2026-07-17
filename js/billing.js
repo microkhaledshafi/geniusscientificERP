@@ -255,28 +255,18 @@ function printInvoice() {
 // Auto Initialize Billing
 //======================================
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
     if (document.getElementById("invoiceDate")) {
-
         document.getElementById("invoiceDate").value =
             new Date().toISOString().split("T")[0];
-
     }
 
-    if (typeof loadCustomers === "function") {
-
-        loadCustomers().then(() => {
-
-            if (typeof loadInvoiceCustomers === "function") {
-
-                loadInvoiceCustomers();
-
-            }
-
-        });
-
+    if (typeof loadInvoiceCustomers === "function") {
+        loadInvoiceCustomers();
     }
+
+});
 
     if (typeof loadProducts === "function") {
 
