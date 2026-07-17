@@ -98,10 +98,26 @@ async function saveProduct() {
 
     console.log("Saving product:", product);
 
-    const { data, error } = await supabaseClient
+    let data, error;
+
+if (editProductId === null) {
+
+    ({ data, error } = await supabaseClient
         .from("products")
         .insert([product])
-        .select();
+        .select());
+
+} else {
+
+    ({ data, error } = await supabaseClient
+        .from("products")
+        .update(product)
+        .eq("id", editProductId)
+        .select());
+
+    editProductId = null;
+    document.getElementById("saveButton").innerText = "Save Product";
+}
 
     if (error) {
 
