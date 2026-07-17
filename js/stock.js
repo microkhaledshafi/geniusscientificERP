@@ -1,10 +1,19 @@
-// Genius Scientific ERP v5.5
-// Stock Module
+//==========================================
+// Genius Scientific ERP
+// stock.js
+// Part 1
+//==========================================
 
-let editProductId = null;
 let productCache = [];
+let editingProductId = null;
+
+//==========================================
+// Load Products
+//==========================================
 
 async function loadProducts() {
+
+    if (!supabaseClient) return;
 
     const { data, error } = await supabaseClient
         .from("products")
@@ -12,46 +21,87 @@ async function loadProducts() {
         .order("product");
 
     if (error) {
+
         console.error(error);
+        alert(error.message);
         return;
+
     }
 
-    productCache = data;
-    renderProducts(data);
+    productCache = data || [];
+
+    renderProducts();
+
+    updateProductCount();
+
+    if (typeof refreshBillingProducts === "function") {
+        refreshBillingProducts();
+    } else if (typeof loadInvoiceProducts === "function") {
+        loadInvoiceProducts();
+    }
 
 }
 
-function renderProducts(products){
+//==========================================
+// Render Product Table
+//==========================================
 
-    const body = document.getElementById("stockBody");
+function renderProducts(list = productCache) {
 
-    body.innerHTML = "";
+    const tbody = document.getElementById("productBody");
 
-    products.forEach(item=>{
+    if (!tbody) return;
 
-        body.innerHTML += `
+    tbody.innerHTML = "";
+
+    list.forEach(product => {
+
+        tbody.innerHTML += `
 
 <tr>
 
-<td>${item.product}</td>
-<td>${item.quantity}</td>
-<td>${item.mrp}</td>
-<td>${item.selling_rate}</td>
+<td>${product.product ?? ""}</td>
 
-<td>${item.gst}</td>
+<td>${product.manufacturer ?? ""}</td>
 
-<td>${item.batch}</td>
+<td>${product.category ?? ""}</td>
 
-<td>${item.expiry ?? ""}</td>
+<td>${product.batch ?? ""}</td>
+
+<td>${product.lot ?? ""}</td>
+
+<td>${product.hsn ?? ""}</td>
+
+<td>${Number(product.purchase_rate || 0).toFixed(2)}</td>
+
+<td>${Number(product.selling_rate || 0).toFixed(2)}</td>
+
+<td>${Number(product.mrp || 0).toFixed(2)}</td>
+
+<td>${Number(product.gst || 0)}%</td>
+
+<td>${product.quantity ?? 0}</td>
+
+<td>${product.unit ?? ""}</td>
+
+<td>${product.expiry ?? ""}</td>
 
 <td>
 
-<button onclick="editProduct(${item.id})">
-✏️
+<button
+class="actionBtn"
+onclick="editProduct(${product.id})">
+
+Edit
+
 </button>
 
-<button onclick="deleteProduct(${item.id})">
-🗑
+<button
+class="actionBtn"
+onclick="deleteProduct(${product.id})">
+
+Delete
+
 </button>
 
 </td>
@@ -62,11 +112,31 @@ function renderProducts(products){
 
     });
 
-    document.getElementById("totalProducts").innerText =
-        products.length;
-
 }
+
+//==========================================
+// Dashboard Product Count
+//==========================================
+
+function updateProductCount() {
+
+    const total = document.getElementById("totalProducts");
+
+    if (total) {
+
+        total.innerHTML = productCache.length;
+
+    }
+    //==========================================
+// Save Product
+//==========================================
+
 async function saveProduct() {
+
+    if (!supabaseClient) {
+        alert("Supabase not connected.");
+        return;
+    }
 
     const product = {
 
@@ -76,48 +146,189 @@ async function saveProduct() {
 
         category: document.getElementById("category").value.trim(),
 
+        lot: document.getElementById("lot").value.trim(),
+
+        batch: document.getElementById("batch").value.trim(),
+
         hsn: document.getElementById("hsn").value.trim(),
 
-        purchase_rate: Number(document.getElementById("purchaseRate").value || 0),
+        purchase_rate: Number(
+            document.getElementById("purchaseRate").value || 0
+        ),
 
-        selling_rate: Number(document.getElementById("sellingRate").value || 0),
+        selling_rate: Number(
+            document.getElementById("sellingRate").value || 0
+        ),
 
-        mrp: Number(document.getElementById("productMRP").value || 0),
+        mrp: Number(
+            document.getElementById("mrp").value || 0
+        ),
 
-        gst: Number(document.getElementById("productGST").value || 0),
+        gst: Number(
+            document.getElementById("gst").value || 0
+        ),
 
-        quantity: Number(document.getElementById("quantity").value || 0),
+        quantity: Number(
+            document.getElementById("quantity").value || 0
+        ),
 
         unit: document.getElementById("unit").value.trim(),
 
-        batch: document.getElementById("productLot").value.trim(),
-
-        expiry: document.getElementById("productExpiry").value || null
+        expiry: document.getElementById("expiry").value || null
 
     };
 
-    console.log("Saving product:", product);
+    if (product.product === "") {
 
-    let data, error;
+        alert("Product Name is required");
 
-if (editProductId === null) {
+        return;
 
-    ({ data, error } = await supabaseClient
-        .from("products")
-        .insert([product])
-        .select());
+    }
 
-} else {
+    let result;
 
-    ({ data, error } = await supabaseClient
-        .from("products")
-        .update(product)
-        .eq("id", editProductId)
-        .select());
+    if (editingProductId === null) {
 
-    editProductId = null;
-    document.getElementById("saveButton").innerText = "Save Product";
+        result = await supabaseClient
+            .from("products")
+            .insert([product]);
+
+    } else {
+
+        result = await supabaseClient
+            .from("products")
+            .update(product)
+            .eq("id", editingProductId);
+
+    }
+
+    if (result.error) {
+
+        console.error(result.error);
+
+        alert(result.error.message);
+
+        return;
+
+    }
+
+    clearProductForm();
+
+    editingProductId = null;
+
+    document.getElementById("saveButtonProduct").innerHTML =
+        "Save Product";
+
+    await loadProducts();
+
 }
+
+//==========================================
+// Edit Product
+//==========================================
+
+function editProduct(id) {
+
+    const product = productCache.find(p => p.id == id);
+
+    if (!product) return;
+
+    editingProductId = id;
+
+    document.getElementById("productName").value =
+        product.product || "";
+
+    document.getElementById("manufacturer").value =
+        product.manufacturer || "";
+
+    document.getElementById("category").value =
+        product.category || "";
+
+    document.getElementById("lot").value =
+        product.lot || "";
+
+    document.getElementById("batch").value =
+        product.batch || "";
+
+    document.getElementById("hsn").value =
+        product.hsn || "";
+
+    document.getElementById("purchaseRate").value =
+        product.purchase_rate || 0;
+
+    document.getElementById("sellingRate").value =
+        product.selling_rate || 0;
+
+    document.getElementById("mrp").value =
+        product.mrp || 0;
+
+    document.getElementById("gst").value =
+        product.gst || 0;
+
+    document.getElementById("quantity").value =
+        product.quantity || 0;
+
+    document.getElementById("unit").value =
+        product.unit || "";
+
+    document.getElementById("expiry").value =
+        product.expiry || "";
+
+    document.getElementById("saveButtonProduct").innerHTML =
+        "Update Product";
+
+}
+
+//==========================================
+// Clear Product Form
+//==========================================
+
+function clearProductForm() {
+
+    document.getElementById("productName").value = "";
+
+    document.getElementById("manufacturer").value = "";
+
+    document.getElementById("category").value = "";
+
+    document.getElementById("lot").value = "";
+
+    document.getElementById("batch").value = "";
+
+    document.getElementById("hsn").value = "";
+
+    document.getElementById("purchaseRate").value = "";
+
+    document.getElementById("sellingRate").value = "";
+
+    document.getElementById("mrp").value = "";
+
+    document.getElementById("gst").value = "";
+
+    document.getElementById("quantity").value = "";
+
+    document.getElementById("unit").value = "";
+
+    document.getElementById("expiry").value = "";
+
+}
+    //==========================================
+// Delete Product
+//==========================================
+
+async function deleteProduct(id) {
+
+    const confirmDelete = confirm(
+        "Are you sure you want to delete this product?"
+    );
+
+    if (!confirmDelete) return;
+
+    const { error } = await supabaseClient
+        .from("products")
+        .delete()
+        .eq("id", id);
 
     if (error) {
 
@@ -129,102 +340,130 @@ if (editProductId === null) {
 
     }
 
-    console.log(data);
-
-    alert("Product Saved Successfully");
-
-    clearProductForm();
-
-    loadProducts();
+    await loadProducts();
 
 }
 
-    
+//==========================================
+// Search Products
+//==========================================
 
-function clearProductForm() {
+function searchProduct() {
 
-    [
-        "productName",
-        "manufacturer",
-        "category",
-        "hsn",
-        "purchaseRate",
-        "sellingRate",
-        "productMRP",
-        "productGST",
-        "quantity",
-        "unit",
-        "productLot",
-        "productExpiry"
-    ].forEach(id => {
+    const keyword = document
+        .getElementById("productSearch")
+        .value
+        .toLowerCase()
+        .trim();
 
-        const el = document.getElementById(id);
+    if (keyword === "") {
 
-        if (el) el.value = "";
-
-    });
-
-}
-
-function editProduct(id) {
-
-    const item = productCache.find(x => x.id === id);
-
-    if (!item) return;
-
-    editProductId = id;
-
-    document.getElementById("productName").value = item.product;
-    document.getElementById("productMRP").value = item.mrp;
-    document.getElementById("sellingRate").value = item.selling_rate;
-document.getElementById("purchaseRate").value = item.purchase_rate;
-document.getElementById("productLot").value = item.batch;
-
-document.getElementById("manufacturer").value = item.manufacturer;
-document.getElementById("category").value = item.category;
-document.getElementById("hsn").value = item.hsn;
-document.getElementById("quantity").value = item.quantity;
-document.getElementById("unit").value = item.unit;
-
-    document.getElementById("saveButton").innerText = "Update Product";
-
-}
-async function deleteProduct(id) {
-
-    const ok = confirm("Delete this product?");
-
-    if (!ok) return;
-
-    const { error } = await supabaseClient
-        .from("products")
-        .delete()
-        .eq("id", id);
-
-    if (error) {
-
-        alert(error.message);
+        renderProducts();
 
         return;
 
     }
 
-    loadProducts();
+    const filtered = productCache.filter(product =>
 
-}
-function searchProduct() {
+        (product.product || "")
+            .toLowerCase()
+            .includes(keyword)
 
-    const text = document
-        .getElementById("searchProduct")
-        .value
-        .toLowerCase();
+        ||
 
-    const filtered = productCache.filter(item =>
+        (product.manufacturer || "")
+            .toLowerCase()
+            .includes(keyword)
 
-        item.product.toLowerCase().includes(text)
+        ||
+
+        (product.category || "")
+            .toLowerCase()
+            .includes(keyword)
+
+        ||
+
+        (product.batch || "")
+            .toLowerCase()
+            .includes(keyword)
+
+        ||
+
+        (product.lot || "")
+            .toLowerCase()
+            .includes(keyword)
+
+        ||
+
+        (product.hsn || "")
+            .toLowerCase()
+            .includes(keyword)
 
     );
 
     renderProducts(filtered);
 
 }
-window.addEventListener("load",loadProducts);
+
+//==========================================
+// Reset Product Form
+//==========================================
+
+function resetProductForm() {
+
+    editingProductId = null;
+
+    clearProductForm();
+
+    const btn = document.getElementById("saveButtonProduct");
+
+    if (btn) {
+
+        btn.innerHTML = "Save Product";
+
+    }
+
+}
+
+//==========================================
+// Refresh Billing Products
+//==========================================
+
+function refreshBillingProducts() {
+
+    if (typeof loadInvoiceProducts === "function") {
+
+        loadInvoiceProducts();
+
+    }
+
+}
+
+//==========================================
+// Get Product by ID
+//==========================================
+
+function getProductById(id) {
+
+    return productCache.find(
+        product => Number(product.id) === Number(id)
+    );
+
+}
+
+//==========================================
+// Get Product by Name
+//==========================================
+
+function getProductByName(name) {
+
+    return productCache.find(
+        product =>
+            (product.product || "").toLowerCase() ===
+            (name || "").toLowerCase()
+    );
+
+}
+
+}
