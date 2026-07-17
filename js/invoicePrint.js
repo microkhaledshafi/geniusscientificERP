@@ -651,3 +651,37 @@ function numberToWords(num){
   
 
 }
+
+html += `
+
+</body>
+
+</html>
+
+`;
+
+const printWindow = window.open(
+    "",
+    "_blank",
+    "width=900,height=700"
+);
+
+printWindow.document.open();
+
+printWindow.document.write(html);
+
+printWindow.document.close();
+
+printWindow.focus();
+
+setTimeout(()=>{
+
+    printWindow.print();
+
+},500);
+
+printWindow.onafterprint=()=>{
+
+    printWindow.close();
+
+};
