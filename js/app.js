@@ -1,9 +1,13 @@
-// ========================================
-// Genius Scientific ERP v7
+//==========================================
+// Genius Scientific ERP
 // app.js
-// ========================================
+//==========================================
 
 let currentPage = "dashboard";
+
+//==========================================
+// Show Pages
+//==========================================
 
 function showPage(page) {
 
@@ -13,48 +17,148 @@ function showPage(page) {
 
     const target = document.getElementById(page);
 
-    if (target) {
-        target.style.display = "block";
-        currentPage = page;
+    if (!target) return;
+
+    target.style.display = "block";
+
+    currentPage = page;
+
+    switch (page) {
+
+        case "stock":
+
+            if (typeof loadProducts === "function") {
+                loadProducts();
+            }
+
+            break;
+
+        case "customers":
+
+            if (typeof loadCustomers === "function") {
+                loadCustomers();
+            }
+
+            break;
+
+        case "billing":
+
+            if (typeof loadCustomers === "function") {
+                loadCustomers();
+            }
+
+            if (typeof loadProducts === "function") {
+                loadProducts();
+            }
+
+            if (typeof loadInvoiceCustomers === "function") {
+                loadInvoiceCustomers();
+            }
+
+            if (typeof loadInvoiceProducts === "function") {
+                loadInvoiceProducts();
+            }
+
+            break;
+
+        case "payments":
+
+            if (typeof loadCustomers === "function") {
+                loadCustomers();
+            }
+
+            if (typeof loadPayments === "function") {
+                loadPayments();
+            }
+
+            break;
+
+        case "reports":
+
+            if (typeof loadReports === "function") {
+                loadReports();
+            }
+
+            break;
+
     }
 
 }
 
+//==========================================
+// Toast Notification
+//==========================================
+
 function toast(message, color = "#198754") {
 
-    let toast = document.getElementById("toast");
+    let toastBox = document.getElementById("toast");
 
-    if (!toast) {
+    if (!toastBox) {
 
-        toast = document.createElement("div");
+        toastBox = document.createElement("div");
 
-        toast.id = "toast";
+        toastBox.id = "toast";
 
-        toast.style.position = "fixed";
-        toast.style.right = "20px";
-        toast.style.bottom = "20px";
-        toast.style.padding = "12px 20px";
-        toast.style.borderRadius = "8px";
-        toast.style.color = "#fff";
-        toast.style.fontWeight = "bold";
-        toast.style.zIndex = "9999";
+        toastBox.style.position = "fixed";
+        toastBox.style.right = "20px";
+        toastBox.style.bottom = "20px";
+        toastBox.style.padding = "12px 20px";
+        toastBox.style.borderRadius = "8px";
+        toastBox.style.color = "#fff";
+        toastBox.style.fontWeight = "bold";
+        toastBox.style.zIndex = "99999";
+        toastBox.style.display = "none";
 
-        document.body.appendChild(toast);
+        document.body.appendChild(toastBox);
 
     }
 
-    toast.style.background = color;
-    toast.innerText = message;
-    toast.style.display = "block";
+    toastBox.style.background = color;
+    toastBox.innerHTML = message;
+    toastBox.style.display = "block";
 
     setTimeout(() => {
-        toast.style.display = "none";
+
+        toastBox.style.display = "none";
+
     }, 2500);
 
 }
 
-window.addEventListener("load", () => {
+//==========================================
+// Dashboard Refresh
+//==========================================
+
+async function refreshDashboard() {
+
+    if (typeof loadProducts === "function") {
+
+        await loadProducts();
+
+    }
+
+    if (typeof loadCustomers === "function") {
+
+        await loadCustomers();
+
+    }
+
+}
+
+//==========================================
+// Application Start
+//==========================================
+
+document.addEventListener("DOMContentLoaded", async () => {
 
     showPage("dashboard");
+
+    if (typeof testConnection === "function") {
+
+        await testConnection();
+
+    }
+
+    await refreshDashboard();
 
 });
