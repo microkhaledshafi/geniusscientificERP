@@ -1,19 +1,25 @@
-// ========================================
-// Genius Scientific ERP v7
+//==========================================
+// Genius Scientific ERP
 // Supabase Configuration
-// ========================================
+//==========================================
 
-// Paste your values here
+// Replace with your own values
 const SUPABASE_URL = "https://cxssryhesrgomcdxddwn.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_QiNQzM7U5l6mJpbHIN4UJQ_nv_90lED";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
 
-// Create client
+//==========================================
+// Create Supabase Client
+//==========================================
+
 const supabaseClient = supabase.createClient(
     SUPABASE_URL,
     SUPABASE_ANON_KEY
 );
 
-// Test connection
+//==========================================
+// Test Connection
+//==========================================
+
 async function testConnection() {
 
     try {
@@ -24,17 +30,48 @@ async function testConnection() {
             .limit(1);
 
         if (error) {
-            alert(error.message);
-            return;
+            console.error(error);
+            alert("Supabase Error:\n" + error.message);
+            return false;
         }
 
-        alert("Supabase Connected Successfully");
+        console.log("Supabase Connected Successfully");
+        return true;
 
     } catch (err) {
 
         console.error(err);
-        alert("Connection Failed");
+        alert("Unable to connect to Supabase.");
+        return false;
 
     }
 
 }
+
+//==========================================
+// Helper
+//==========================================
+
+function isSupabaseReady() {
+
+    if (!supabaseClient) {
+
+        alert("Supabase Client Not Initialised");
+
+        return false;
+
+    }
+
+    return true;
+
+}
+
+//==========================================
+// Auto Connection Test
+//==========================================
+
+document.addEventListener("DOMContentLoaded", async () => {
+
+    await testConnection();
+
+});
