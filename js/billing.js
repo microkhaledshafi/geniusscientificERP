@@ -89,7 +89,7 @@ function addInvoiceRow(){
 
 <td>
 
-<select onchange="productChanged(this)">
+<select class="productSelect" onchange="productChanged(this)">
 
 ${options}
 
