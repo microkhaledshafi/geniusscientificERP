@@ -1,167 +1,100 @@
-// ========================================
-// Genius Scientific ERP
-// Billing Module - Part 1
-// ========================================
+<!-- ========================= -->
+<!-- Billing -->
+<!-- ========================= -->
 
-let invoiceProducts = [];
+<section id="billing" class="page" style="display:none;">
 
-window.addEventListener("load", initialiseBilling);
+<h1>Create Invoice</h1>
 
-async function initialiseBilling() {
+<div class="tableCard">
 
-    generateInvoiceNumber();
+<div class="formGrid">
 
-    document.getElementById("invoiceDate").value =
-        new Date().toISOString().split("T")[0];
+<input id="invoiceNumber" placeholder="Invoice Number">
 
-    loadInvoiceCustomers();
+<input id="invoiceDate" type="date">
 
-    await loadProducts();
+<select id="invoiceCustomer">
+    <option value="">Select Customer</option>
+</select>
 
-}
+</div>
 
-function generateInvoiceNumber() {
+</div>
 
-    document.getElementById("invoiceNumber").value =
-        "INV-" + Date.now().toString().slice(-6);
+<div class="tableCard">
 
-}
+<h2>Invoice Items</h2>
 
-function loadInvoiceCustomers() {
+<table>
 
-    const select =
-        document.getElementById("invoiceCustomer");
-
-    select.innerHTML =
-        '<option value="">Select Customer</option>';
-
-    customerCache.forEach(c => {
-
-        select.innerHTML +=
-            `<option value="${c.id}">
-                ${c.name}
-            </option>`;
-
-    });
-
-}
-
-async function loadProducts() {
-
-    const { data, error } =
-        await supabaseClient
-            .from("products")
-            .select("*")
-            .order("product");
-
-    if (error) {
-
-        console.error(error);
-
-        return;
-
-    }
-
-    invoiceProducts = data;
-
-}
-
-function addInvoiceRow() {
-
-    let options = "";
-
-    invoiceProducts.forEach(p => {
-
-        options += `
-            <option value="${p.id}">
-                ${p.product}
-            </option>
-        `;
-
-    });
-
-    document.getElementById("invoiceBody").innerHTML += `
+<thead>
 
 <tr>
 
-<td>
-
-<select onchange="productChanged(this)">
-
-<option value="">Select Product</option>
-
-${options}
-
-</select>
-
-</td>
-
-<td>
-
-<input
-type="number"
-value="1"
-min="1"
-style="width:70px">
-
-</td>
-
-<td>
-
-<input
-type="number"
-readonly>
-
-</td>
-
-<td>
-
-<input
-type="number"
-readonly>
-
-</td>
-
-<td>
-
-<input
-type="number"
-readonly>
-
-</td>
-
-<td>
-
-<button onclick="this.parentNode.parentNode.remove()">
-
-❌
-
-</button>
-
-</td>
+<th>Product</th>
+<th>Qty</th>
+<th>Rate</th>
+<th>GST</th>
+<th>Total</th>
+<th>Action</th>
 
 </tr>
 
-`;
+</thead>
 
-}
+<tbody id="invoiceBody">
 
-function productChanged(select) {
+</tbody>
 
-    const product =
-        invoiceProducts.find(p => p.id == select.value);
+</table>
 
-    if (!product) return;
+<br>
 
-    const row = select.parentNode.parentNode;
+<button type="button" onclick="addInvoiceRow()">
+➕ Add Item
+</button>
 
-    row.cells[2].children[0].value =
-        product.selling_rate;
+</div>
 
-    row.cells[3].children[0].value =
-        product.gst;
+<div class="tableCard">
 
-    row.cells[4].children[0].value =
-        product.selling_rate;
+<h2>Invoice Summary</h2>
 
-}
+<p>
+Sub Total :
+₹ <span id="subTotal">0.00</span>
+</p>
+
+<p>
+Discount :
+<input
+id="invoiceDiscount"
+type="number"
+value="0"
+oninput="calculateInvoice()">
+</p>
+
+<p>
+GST :
+₹ <span id="gstTotal">0.00</span>
+</p>
+
+<h2>
+Grand Total :
+₹ <span id="grandTotal">0.00</span>
+</h2>
+
+<br>
+
+<button onclick="saveInvoice()">
+Save Invoice
+</button>
+
+<button onclick="printInvoice()">
+Print Invoice
+</button>
+
+</div>
+
+</section>
