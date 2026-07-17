@@ -111,3 +111,54 @@ margin-bottom:20px;
 margin-top:10px;
 
 }
+
+@page{
+
+    size:A4 portrait;
+
+    margin:10mm;
+
+}
+
+body{
+
+    font-family:Arial,Helvetica,sans-serif;
+
+    color:#000;
+
+    font-size:12px;
+
+}
+
+table{
+
+    border-collapse:collapse;
+
+}
+
+th{
+
+    background:#f4f4f4;
+
+}
+
+th,
+td{
+
+    border:1px solid #000;
+
+    padding:4px;
+
+}
+
+@media print{
+
+    body{
+
+        -webkit-print-color-adjust:exact;
+
+        print-color-adjust:exact;
+
+    }
+
+}
