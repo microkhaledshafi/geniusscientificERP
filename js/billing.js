@@ -789,3 +789,56 @@ function renderInvoiceHistory(data) {
     });
 
 }
+
+function searchInvoice() {
+
+    const search =
+        document.getElementById("invoiceSearch")
+        .value
+        .toLowerCase();
+
+    document
+        .querySelectorAll("#invoiceHistoryBody tr")
+        .forEach(row => {
+
+            row.style.display =
+                row.innerText.toLowerCase().includes(search)
+                ? ""
+                : "none";
+
+        });
+
+}
+
+async function deleteInvoice(invoiceNo) {
+
+    if (!confirm("Delete this invoice?"))
+        return;
+
+    await supabase
+
+        .from("Invoice items")
+
+        .delete()
+
+        .eq("invoice_number", invoiceNo);
+
+    await supabase
+
+        .from("Invoice")
+
+        .delete()
+
+        .eq("invoice_number", invoiceNo);
+
+    loadInvoiceHistory();
+
+}
+
+async function printInvoice(invoiceNo){
+
+    // This function will be replaced
+    // with the professional A4 invoice
+    // matching your Genius Scientific format.
+
+}
