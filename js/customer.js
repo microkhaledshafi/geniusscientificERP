@@ -13,29 +13,32 @@ let editingCustomerId = null;
 
 async function loadCustomers() {
 
-    if (!supabaseClient) return;
+    if (!supabaseClient) {
+        console.error("Supabase not initialized.");
+        return;
+    }
 
     const { data, error } = await supabaseClient
         .from("customers")
         .select("*")
-        .order("name");
+        .order("name", { ascending: true });
 
     if (error) {
-
-        console.error(error);
+        console.error("Load Customers:", error);
+        alert(error.message);
         return;
-
     }
 
     customerCache = data || [];
 
     renderCustomers();
 
+    updateCustomerCount();
+
+    // Refresh Billing Customer Dropdown
     if (typeof loadInvoiceCustomers === "function") {
         loadInvoiceCustomers();
     }
-
-    updateCustomerCount();
 
 }
 
@@ -57,13 +60,15 @@ function renderCustomers(list = customerCache) {
 
 <tr>
 
-<td>${customer.name ?? ""}</td>
+<td>${customer.name || ""}</td>
 
-<td>${customer.phone ?? ""}</td>
+<td>${customer.phone || ""}</td>
 
-<td>${customer.address ?? ""}</td>
+<td>${customer.email || ""}</td>
 
-<td>${customer.gst ?? ""}</td>
+<td>${customer.gst || ""}</td>
+
+<td>${customer.address || ""}</td>
 
 <td>₹ ${Number(customer.opening_balance || 0).toFixed(2)}</td>
 
@@ -78,7 +83,7 @@ Edit
 </button>
 
 <button
-class="actionBtn"
+class="actionBtn deleteBtn"
 onclick="deleteCustomer(${customer.id})">
 
 Delete
@@ -105,7 +110,21 @@ function updateCustomerCount() {
 
     if (total) {
 
-        total.innerHTML = customerCache.length;
+        total.textContent = customerCache.length;
+
+    }
+
+}
+
+//==========================================
+// Refresh Billing Customer Dropdown
+//==========================================
+
+function refreshBillingCustomers() {
+
+    if (typeof loadInvoiceCustomers === "function") {
+
+        loadInvoiceCustomers();
 
     }
 //==========================================
@@ -137,12 +156,10 @@ async function saveCustomer() {
 
     };
 
+    // Validation
     if (customer.name === "") {
-
-        alert("Customer Name is required");
-
+        alert("Customer Name is required.");
         return;
-
     }
 
     let result;
@@ -176,8 +193,11 @@ async function saveCustomer() {
 
     editingCustomerId = null;
 
-    document.getElementById("saveButtonCustomer").innerHTML =
-        "Save Customer";
+    const btn = document.getElementById("saveButtonCustomer");
+
+    if (btn) {
+        btn.innerHTML = "Save Customer";
+    }
 
     await loadCustomers();
 
@@ -189,7 +209,9 @@ async function saveCustomer() {
 
 function editCustomer(id) {
 
-    const customer = customerCache.find(c => c.id == id);
+    const customer = customerCache.find(
+        c => Number(c.id) === Number(id)
+    );
 
     if (!customer) return;
 
@@ -213,13 +235,16 @@ function editCustomer(id) {
     document.getElementById("customerOpening").value =
         customer.opening_balance || 0;
 
-    document.getElementById("saveButtonCustomer").innerHTML =
-        "Update Customer";
+    const btn = document.getElementById("saveButtonCustomer");
+
+    if (btn) {
+        btn.innerHTML = "Update Customer";
+    }
 
 }
 
 //==========================================
-// Clear Form
+// Clear Customer Form
 //==========================================
 
 function clearCustomerForm() {
@@ -237,7 +262,7 @@ function clearCustomerForm() {
     document.getElementById("customerOpening").value = "";
 
 }
-//==========================================
+    //==========================================
 // Delete Customer
 //==========================================
 
@@ -269,7 +294,7 @@ async function deleteCustomer(id) {
 }
 
 //==========================================
-// Search Customer
+// Search Customers
 //==========================================
 
 function searchCustomer() {
@@ -345,12 +370,22 @@ function resetCustomerForm() {
 }
 
 //==========================================
-// Refresh Customer Dropdown (Billing)
+// Get Customer By ID
 //==========================================
 
-function refreshCustomerModule() {
+function getCustomerById(id) {
 
-    loadCustomers();
+    return customerCache.find(
+        customer => Number(customer.id) === Number(id)
+    );
+
+}
+
+//==========================================
+// Refresh Billing Customer Dropdown
+//==========================================
+
+function refreshBillingCustomers() {
 
     if (typeof loadInvoiceCustomers === "function") {
 
