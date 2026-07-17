@@ -469,55 +469,45 @@ Add Item
 
 Invoice Summary
 
-</h2>
+<div class="tableCard">
+
+<h2>Invoice Summary</h2>
 
 <p>
-
 Sub Total :
-₹
-<span id="subTotal">
-
-0.00
-
-</span>
-
+₹ <span id="subTotal">0.00</span>
 </p>
 
 <p>
-
 Discount :
-
 <input
 id="invoiceDiscount"
 type="number"
 value="0"
 oninput="calculateInvoice()">
-
 </p>
 
 <p>
-
 GST :
-₹
-<span id="gstTotal">
-
-0.00
-
-</span>
-
+₹ <span id="gstTotal">0.00</span>
 </p>
 
 <h2>
-
 Grand Total :
-₹
-<span id="grandTotal">
-
-0.00
-
-</span>
-
+₹ <span id="grandTotal">0.00</span>
 </h2>
+
+<br>
+
+<button onclick="saveInvoice()">
+Save Invoice
+</button>
+
+<button onclick="printInvoice()">
+Print Invoice
+</button>
+
+</div>
 
 <br>
 
