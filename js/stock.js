@@ -37,11 +37,11 @@ function renderProducts(products){
 
 <td>${item.mrp}</td>
 
-<td>${item.rate}</td>
+<td>${item.selling_rate}</td>
 
 <td>${item.gst}</td>
 
-<td>${item.lot}</td>
+<td>${item.batch}</td>
 
 <td>${item.expiry ?? ""}</td>
 
@@ -171,10 +171,15 @@ function editProduct(id) {
 
     document.getElementById("productName").value = item.product;
     document.getElementById("productMRP").value = item.mrp;
-    document.getElementById("productRate").value = item.rate;
-    document.getElementById("productGST").value = item.gst;
-    document.getElementById("productLot").value = item.lot;
-    document.getElementById("productExpiry").value = item.expiry;
+    document.getElementById("sellingRate").value = item.selling_rate;
+document.getElementById("purchaseRate").value = item.purchase_rate;
+document.getElementById("productLot").value = item.batch;
+
+document.getElementById("manufacturer").value = item.manufacturer;
+document.getElementById("category").value = item.category;
+document.getElementById("hsn").value = item.hsn;
+document.getElementById("quantity").value = item.quantity;
+document.getElementById("unit").value = item.unit;
 
     document.getElementById("saveButton").innerText = "Update Product";
 
