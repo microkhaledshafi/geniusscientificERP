@@ -7,54 +7,45 @@ async function saveSettings(){
 
     if(!isSupabaseReady()) return;
 
-    const settings={
+    const settings = {
 
-        company:document.getElementById("companyName").value,
+    company_name: document.getElementById("companyName").value,
 
-        gst:document.getElementById("companyGST").value,
+    address: document.getElementById("companyAddress").value,
 
-        dl:document.getElementById("companyDL").value,
+    city: "",
 
-        phone1:document.getElementById("companyPhone1").value,
+    state: "",
 
-        phone2:document.getElementById("companyPhone2").value,
+    pincode: "",
 
-        email:document.getElementById("companyEmail").value,
+    phone1: document.getElementById("companyPhone1").value,
 
-        website:document.getElementById("companyWebsite").value,
+    phone2: document.getElementById("companyPhone2").value,
 
-        upi:document.getElementById("companyUPI").value,
+    email: document.getElementById("companyEmail").value,
 
-        bank:document.getElementById("companyBank").value,
+    website: document.getElementById("companyWebsite").value,
 
-        account:document.getElementById("companyAccount").value,
+    gstin: document.getElementById("companyGST").value,
 
-        ifsc:document.getElementById("companyIFSC").value,
+    dl_no: document.getElementById("companyDL").value,
 
-        address:document.getElementById("companyAddress").value,
+    bank_name: document.getElementById("companyBank").value,
 
-        terms:document.getElementById("invoiceTerms").value
+    account_name: "",
 
-    };
+    account_number: document.getElementById("companyAccount").value,
 
-    const {error}=await supabaseClient
+    ifsc: document.getElementById("companyIFSC").value,
 
-        .from("settings")
+    upi: document.getElementById("companyUPI").value,
 
-        .upsert(settings);
+    terms: document.getElementById("invoiceTerms").value,
 
-    if(error){
+    logo: ""
 
-        alert(error.message);
-
-        return;
-
-    }
-
-    alert("Settings Saved");
-
-}
-
+};
 async function loadSettings(){
 
     if(!isSupabaseReady()) return;
@@ -79,30 +70,30 @@ async function loadSettings(){
 
     const s=data[0];
 
-    document.getElementById("companyName").value=s.company||"";
+   document.getElementById("companyName").value = s.company_name || "";
 
-    document.getElementById("companyGST").value=s.gst||"";
+document.getElementById("companyAddress").value = s.address || "";
 
-    document.getElementById("companyDL").value=s.dl||"";
+document.getElementById("companyPhone1").value = s.phone1 || "";
 
-    document.getElementById("companyPhone1").value=s.phone1||"";
+document.getElementById("companyPhone2").value = s.phone2 || "";
 
-    document.getElementById("companyPhone2").value=s.phone2||"";
+document.getElementById("companyEmail").value = s.email || "";
 
-    document.getElementById("companyEmail").value=s.email||"";
+document.getElementById("companyWebsite").value = s.website || "";
 
-    document.getElementById("companyWebsite").value=s.website||"";
+document.getElementById("companyGST").value = s.gstin || "";
 
-    document.getElementById("companyUPI").value=s.upi||"";
+document.getElementById("companyDL").value = s.dl_no || "";
 
-    document.getElementById("companyBank").value=s.bank||"";
+document.getElementById("companyBank").value = s.bank_name || "";
 
-    document.getElementById("companyAccount").value=s.account||"";
+document.getElementById("companyAccount").value = s.account_number || "";
 
-    document.getElementById("companyIFSC").value=s.ifsc||"";
+document.getElementById("companyIFSC").value = s.ifsc || "";
 
-    document.getElementById("companyAddress").value=s.address||"";
+document.getElementById("companyUPI").value = s.upi || "";
 
-    document.getElementById("invoiceTerms").value=s.terms||"";
+document.getElementById("invoiceTerms").value = s.terms || "";
 
 }
