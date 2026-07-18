@@ -1,182 +1,141 @@
-//==========================================
+// ==========================================
 // Genius Scientific ERP
 // customer.js
-// Part 1
-//==========================================
+// ==========================================
 
-let customerCache = [];
-let editingCustomerId = null;
+let customerList = [];
+let selectedCustomerId = null;
 
-//==========================================
+// ==========================================
 // Load Customers
-//==========================================
+// ==========================================
 
 async function loadCustomers() {
 
     if (!isSupabaseReady()) return;
 
-    const { data, error } = await supabaseClient
-        .from("customers")
-        .select("*")
-        .order("name", { ascending: true });
+    try {
 
-    if (error) {
+        const { data, error } = await supabaseClient
+            .from("customers")
+            .select("*")
+            .order("name");
 
-        console.error(error);
+        if (error) throw error;
 
-        toast(error.message, "#dc3545");
+        customerList = data || [];
+
+        renderCustomers(customerList);
+
+        populateCustomerDropdown();
+
+    }
+
+    catch (err) {
+
+        console.error(err);
+
+        notify(err.message);
+
+    }
+
+}
+
+// ==========================================
+// Render Customer Table
+// ==========================================
+
+function renderCustomers(customers) {
+
+    const body = document.getElementById("customerBody");
+
+    if (!body) return;
+
+    body.innerHTML = "";
+
+    if (!customers.length) {
+
+        body.innerHTML = `
+        <tr>
+            <td colspan="6" style="text-align:center">
+                No Customers
+            </td>
+        </tr>`;
 
         return;
 
     }
 
-    customerCache = data || [];
+    customers.forEach(customer => {
 
-    renderCustomers();
+        body.innerHTML += `
 
-    updateCustomerCount();
+        <tr>
 
-    refreshBillingCustomers();
+            <td>${customer.name || ""}</td>
 
-}
+            <td>${customer.phone || ""}</td>
 
-//==========================================
-// Render Customer Table
-//==========================================
+            <td>${customer.email || ""}</td>
 
-function renderCustomers(list = customerCache) {
+            <td>${customer.gst || ""}</td>
 
-    const tbody = document.getElementById("customerBody");
+            <td>${money(customer.opening_balance || 0)}</td>
 
-    if (!tbody) return;
+            <td>
 
-    tbody.innerHTML = "";
+                <button onclick="editCustomer(${customer.id})">
+                    Edit
+                </button>
 
-    list.forEach(customer => {
+                <button onclick="deleteCustomer(${customer.id})">
+                    Delete
+                </button>
 
-        tbody.innerHTML += `
+            </td>
 
-<tr>
+        </tr>
 
-<td>${customer.name ?? ""}</td>
-
-<td>${customer.phone ?? ""}</td>
-
-<td>${customer.email ?? ""}</td>
-
-<td>${customer.gst ?? ""}</td>
-
-<td>${customer.address ?? ""}</td>
-
-<td>${Number(customer.opening_balance || 0).toFixed(2)}</td>
-
-<td>
-
-<button
-class="actionBtn"
-onclick="editCustomer(${customer.id})">
-
-Edit
-
-</button>
-
-<button
-class="actionBtn deleteBtn"
-onclick="deleteCustomer(${customer.id})">
-
-Delete
-
-</button>
-
-</td>
-
-</tr>
-
-`;
+        `;
 
     });
 
 }
 
-//==========================================
-// Dashboard Customer Count
-//==========================================
+// ==========================================
+// Customer Dropdown
+// ==========================================
 
-function updateCustomerCount() {
+function populateCustomerDropdown() {
 
-    const total = document.getElementById("totalCustomers");
+    const invoice = document.getElementById("invoiceCustomer");
+    const payment = document.getElementById("paymentCustomer");
 
-    if (total) {
+    [invoice, payment].forEach(select => {
 
-        total.textContent = customerCache.length;
+        if (!select) return;
 
-    }
+        select.innerHTML = `<option value="">Select Customer</option>`;
 
-}
+        customerList.forEach(customer => {
 
-//==========================================
-// Refresh Billing Customer Dropdown
-//==========================================
+            select.innerHTML += `
 
-function refreshBillingCustomers() {
+            <option value="${customer.id}">
+                ${customer.name}
+            </option>
 
-    if (typeof loadInvoiceCustomers === "function") {
+            `;
 
-        loadInvoiceCustomers();
+        });
 
-    }
-
-}
-
-//==========================================
-// Helper Functions
-//==========================================
-
-function getCustomerById(id) {
-
-    return customerCache.find(
-
-        customer => Number(customer.id) === Number(id)
-
-    );
+    });
 
 }
 
-function getCustomerByName(name) {
-
-    return customerCache.find(
-
-        customer =>
-
-            (customer.name || "")
-                .toLowerCase()
-                ===
-            (name || "")
-                .toLowerCase()
-
-    );
-
-}
-
-function customerExists(name) {
-
-    return customerCache.some(
-
-        customer =>
-
-            (customer.name || "")
-                .toLowerCase()
-                ===
-            (name || "")
-                .toLowerCase()
-
-    );
-
-}
-
-//==========================================
+// ==========================================
 // Save Customer
-//==========================================
+// ==========================================
 
 async function saveCustomer() {
 
@@ -195,339 +154,213 @@ async function saveCustomer() {
         address: document.getElementById("customerAddress").value.trim(),
 
         opening_balance: Number(
-            document.getElementById("customerOpening").value || 0
+            document.getElementById("customerOpeningBalance").value || 0
         )
 
     };
 
-    if (customer.name === "") {
+    if (!customer.name) {
 
-        toast("Customer Name is required", "#dc3545");
-
-        return;
-
-    }
-
-    let error;
-
-    if (editingCustomerId === null) {
-
-        ({ error } = await supabaseClient
-            .from("customers")
-            .insert([customer]));
-
-    } else {
-
-        ({ error } = await supabaseClient
-            .from("customers")
-            .update(customer)
-            .eq("id", editingCustomerId));
-
-    }
-
-    if (error) {
-
-        console.error(error);
-
-        toast(error.message, "#dc3545");
+        notify("Customer name is required.");
 
         return;
 
     }
 
-    toast(
-        editingCustomerId === null
-            ? "Customer Saved Successfully"
-            : "Customer Updated Successfully"
-    );
+    try {
 
-    resetCustomerForm();
+        if (selectedCustomerId) {
 
-    await loadCustomers();
+            await updateRecord(
+                "customers",
+                selectedCustomerId,
+                customer
+            );
+
+            notify("Customer Updated");
+
+        }
+
+        else {
+
+            await insertRecord(
+                "customers",
+                customer
+            );
+
+            notify("Customer Saved");
+
+        }
+
+        resetCustomerForm();
+
+        loadCustomers();
+
+        refreshDashboard();
+
+        addActivity("Customer saved");
+
+    }
+
+    catch (err) {
+
+        console.error(err);
+
+        notify(err.message);
+
+    }
 
 }
 
-//==========================================
+// ==========================================
 // Edit Customer
-//==========================================
+// ==========================================
 
 function editCustomer(id) {
 
-    const customer = getCustomerById(id);
+    const c = customerList.find(x => x.id == id);
 
-    if (!customer) return;
+    if (!c) return;
 
-    editingCustomerId = Number(id);
+    selectedCustomerId = id;
 
-    document.getElementById("customerName").value =
-        customer.name || "";
+    document.getElementById("customerName").value = c.name || "";
 
-    document.getElementById("customerPhone").value =
-        customer.phone || "";
+    document.getElementById("customerPhone").value = c.phone || "";
 
-    document.getElementById("customerEmail").value =
-        customer.email || "";
+    document.getElementById("customerEmail").value = c.email || "";
 
-    document.getElementById("customerGST").value =
-        customer.gst || "";
+    document.getElementById("customerGST").value = c.gst || "";
 
-    document.getElementById("customerAddress").value =
-        customer.address || "";
+    document.getElementById("customerAddress").value = c.address || "";
 
-    document.getElementById("customerOpening").value =
-        customer.opening_balance || 0;
-
-    document.getElementById("saveButtonCustomer").textContent =
-        "Update Customer";
+    document.getElementById("customerOpeningBalance").value =
+        c.opening_balance || 0;
 
 }
 
-//==========================================
-// Clear Customer Form
-//==========================================
-
-function clearCustomerForm() {
-
-    document.getElementById("customerName").value = "";
-
-    document.getElementById("customerPhone").value = "";
-
-    document.getElementById("customerEmail").value = "";
-
-    document.getElementById("customerGST").value = "";
-
-    document.getElementById("customerAddress").value = "";
-
-    document.getElementById("customerOpening").value = "";
-
-}
-
-//==========================================
-// Reset Customer Form
-//==========================================
-
-function resetCustomerForm() {
-
-    editingCustomerId = null;
-
-    clearCustomerForm();
-
-    document.getElementById("saveButtonCustomer").textContent =
-        "Save Customer";
-
-}
-
-//==========================================
+// ==========================================
 // Delete Customer
-//==========================================
+// ==========================================
 
 async function deleteCustomer(id) {
 
-    const confirmDelete = confirm(
-        "Are you sure you want to delete this customer?"
-    );
-
-    if (!confirmDelete) return;
-
-    const { error } = await supabaseClient
-        .from("customers")
-        .delete()
-        .eq("id", id);
-
-    if (error) {
-
-        console.error(error);
-
-        toast(error.message, "#dc3545");
-
+    if (!confirm("Delete this customer?"))
         return;
+
+    try {
+
+        await deleteRecord(
+            "customers",
+            id
+        );
+
+        loadCustomers();
+
+        refreshDashboard();
+
+        addActivity("Customer deleted");
 
     }
 
-    toast("Customer deleted successfully");
+    catch (err) {
 
-    await loadCustomers();
+        notify(err.message);
+
+    }
 
 }
 
-//==========================================
+// ==========================================
+// Reset Form
+// ==========================================
+
+function resetCustomerForm() {
+
+    selectedCustomerId = null;
+
+    [
+
+        "customerName",
+
+        "customerPhone",
+
+        "customerEmail",
+
+        "customerGST",
+
+        "customerAddress",
+
+        "customerOpeningBalance"
+
+    ].forEach(id => {
+
+        const input = document.getElementById(id);
+
+        if (input)
+            input.value = "";
+
+    });
+
+}
+
+// ==========================================
 // Search Customer
-//==========================================
+// ==========================================
 
 function searchCustomer() {
 
-    const keyword = document
+    const text = document
         .getElementById("customerSearch")
         .value
-        .trim()
         .toLowerCase();
 
-    if (keyword === "") {
+    const filtered = customerList.filter(customer =>
 
-        renderCustomers(customerCache);
+        (customer.name || "")
+            .toLowerCase()
+            .includes(text)
 
-        return;
+        ||
 
-    }
+        (customer.phone || "")
+            .toLowerCase()
+            .includes(text)
 
-    const filtered = customerCache.filter(customer => {
+        ||
 
-        return (
+        (customer.gst || "")
+            .toLowerCase()
+            .includes(text)
 
-            (customer.name || "")
-                .toLowerCase()
-                .includes(keyword)
-
-            ||
-
-            (customer.phone || "")
-                .toLowerCase()
-                .includes(keyword)
-
-            ||
-
-            (customer.email || "")
-                .toLowerCase()
-                .includes(keyword)
-
-            ||
-
-            (customer.gst || "")
-                .toLowerCase()
-                .includes(keyword)
-
-            ||
-
-            (customer.address || "")
-                .toLowerCase()
-                .includes(keyword)
-
-        );
-
-    });
+    );
 
     renderCustomers(filtered);
 
 }
 
-//==========================================
-// Get Customer List
-//==========================================
+// ==========================================
+// Customer Selection
+// ==========================================
 
-function getCustomerList() {
+document.addEventListener("change", function (e) {
 
-    return customerCache;
+    if (e.target.id !== "invoiceCustomer")
+        return;
 
-}
+    const customer = customerList.find(
 
-//==========================================
-// Refresh Customer Module
-//==========================================
+        c => c.id == e.target.value
 
-async function refreshCustomerModule() {
+    );
 
-    await loadCustomers();
+    if (!customer)
+        return;
 
-}
+    document.getElementById("customerGSTNo").value =
+        customer.gst || "";
 
-//==========================================
-// Refresh Billing Customers
-//==========================================
-
-function refreshBillingCustomers() {
-
-    if (typeof loadInvoiceCustomers === "function") {
-
-        loadInvoiceCustomers();
-
-    }
-
-}
-
-//==========================================
-// Auto Initialization
-//==========================================
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    // Save Customer Button
-    const saveBtn = document.getElementById("saveButtonCustomer");
-
-    if (saveBtn) {
-
-        saveBtn.addEventListener("click", saveCustomer);
-
-    }
-
-    // Customer Search
-    const searchBox = document.getElementById("customerSearch");
-
-    if (searchBox) {
-
-        searchBox.addEventListener("keyup", searchCustomer);
-
-    }
-
-    // Press Enter to Save Customer
-    [
-        "customerName",
-        "customerPhone",
-        "customerEmail",
-        "customerGST",
-        "customerAddress",
-        "customerOpening"
-    ].forEach(id => {
-
-        const element = document.getElementById(id);
-
-        if (!element) return;
-
-        element.addEventListener("keypress", function (e) {
-
-            if (e.key === "Enter") {
-
-                e.preventDefault();
-
-                saveCustomer();
-
-            }
-
-        });
-
-    });
+    document.getElementById("customerBillAddress").value =
+        customer.address || "";
 
 });
-
-//==========================================
-// Billing Integration
-//==========================================
-
-function loadInvoiceCustomers() {
-
-    const selects = document.querySelectorAll(".invoiceCustomer");
-
-    selects.forEach(select => {
-
-        const currentValue = select.value;
-
-        select.innerHTML = `<option value="">Select Customer</option>`;
-
-        customerCache.forEach(customer => {
-
-            select.innerHTML += `
-                <option value="${customer.name}">
-                    ${customer.name}
-                </option>
-            `;
-
-        });
-
-        select.value = currentValue;
-
-    });
-
-}
-
-//==========================================
-// End of customer.js
-//==========================================
