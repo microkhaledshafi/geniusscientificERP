@@ -1,187 +1,136 @@
-//==========================================
+// ==========================================
 // Genius Scientific ERP
 // stock.js
-// Part 1
-//==========================================
+// ==========================================
 
-let productCache = [];
-let editingProductId = null;
+let selectedProductId = null;
+let productList = [];
 
-//==========================================
+// ==========================================
 // Load Products
-//==========================================
+// ==========================================
 
 async function loadProducts() {
 
     if (!isSupabaseReady()) return;
 
-    const { data, error } = await supabaseClient
-        .from("products")
-        .select("*")
-        .order("product", { ascending: true });
+    try {
 
-    if (error) {
+        const { data, error } = await supabaseClient
+            .from("products")
+            .select("*")
+            .order("product");
 
-        console.error(error);
+        if (error) throw error;
 
-        toast(error.message, "#dc3545");
+        productList = data || [];
+
+        renderProducts(productList);
+
+        if (typeof loadInvoiceProducts === "function")
+            loadInvoiceProducts(productList);
+
+    }
+
+    catch (err) {
+
+        console.error(err);
+        notify(err.message);
+
+    }
+
+}
+
+// ==========================================
+// Render Product Table
+// ==========================================
+
+function renderProducts(products) {
+
+    const body = document.getElementById("productBody");
+
+    if (!body) return;
+
+    body.innerHTML = "";
+
+    if (!products.length) {
+
+        body.innerHTML = `
+        <tr>
+            <td colspan="14" style="text-align:center">
+                No Products Available
+            </td>
+        </tr>`;
 
         return;
 
     }
 
-    productCache = data || [];
+    products.forEach(product => {
 
-    renderProducts();
+        body.innerHTML += `
 
-    updateProductCount();
+        <tr>
 
-    refreshBillingProducts();
+            <td>${product.product ?? ""}</td>
 
-}
+            <td>${product.manufacturer ?? ""}</td>
 
-//==========================================
-// Render Products
-//==========================================
+            <td>${product.category ?? ""}</td>
 
-function renderProducts(list = productCache) {
+            <td>${product.hsn ?? ""}</td>
 
-    const tbody = document.getElementById("productBody");
+            <td>${product.lot ?? ""}</td>
 
-    if (!tbody) return;
+            <td>${product.batch ?? ""}</td>
 
-    tbody.innerHTML = "";
+            <td>${product.expiry ?? ""}</td>
 
-    list.forEach(product => {
+            <td>${money(product.mrp)}</td>
 
-        tbody.innerHTML += `
+            <td>${money(product.purchase_rate)}</td>
 
-<tr>
+            <td>${money(product.selling_rate)}</td>
 
-<td>${product.product ?? ""}</td>
+            <td>${product.gst}%</td>
 
-<td>${product.manufacturer ?? ""}</td>
+            <td>${product.quantity}</td>
 
-<td>${product.category ?? ""}</td>
+            <td>${product.unit ?? ""}</td>
 
-<td>${product.batch ?? ""}</td>
+            <td>
 
-<td>${product.lot ?? ""}</td>
+                <button onclick="editProduct(${product.id})">
 
-<td>${product.hsn ?? ""}</td>
+                    Edit
 
-<td>${Number(product.purchase_rate || 0).toFixed(2)}</td>
+                </button>
 
-<td>${Number(product.selling_rate || 0).toFixed(2)}</td>
+                <button onclick="deleteProduct(${product.id})">
 
-<td>${Number(product.mrp || 0).toFixed(2)}</td>
+                    Delete
 
-<td>${Number(product.gst || 0)}%</td>
+                </button>
 
-<td>${product.quantity ?? 0}</td>
+            </td>
 
-<td>${product.unit ?? ""}</td>
+        </tr>
 
-<td>${product.expiry ?? ""}</td>
-
-<td>
-
-<button
-class="actionBtn"
-onclick="editProduct(${product.id})">
-
-Edit
-
-</button>
-
-<button
-class="actionBtn deleteBtn"
-onclick="deleteProduct(${product.id})">
-
-Delete
-
-</button>
-
-</td>
-
-</tr>
-
-`;
+        `;
 
     });
 
 }
 
-//==========================================
-// Dashboard Counter
-//==========================================
-
-function updateProductCount() {
-
-    const total = document.getElementById("totalProducts");
-
-    if (total) {
-
-        total.textContent = productCache.length;
-
-    }
-
-}
-
-//==========================================
-// Billing Product Dropdown
-//==========================================
-
-function refreshBillingProducts() {
-
-    if (typeof loadInvoiceProducts === "function") {
-
-        loadInvoiceProducts();
-
-    }
-
-}
-
-//==========================================
-// Get Product By ID
-//==========================================
-
-function getProductById(id) {
-
-    return productCache.find(
-
-        product => Number(product.id) === Number(id)
-
-    );
-
-}
-
-//==========================================
-// Get Product By Name
-//==========================================
-
-function getProductByName(name) {
-
-    return productCache.find(
-
-        product =>
-
-            (product.product || "").toLowerCase() ===
-            (name || "").toLowerCase()
-
-    );
-
-}
-
-//==========================================
+// ==========================================
 // Save Product
-//==========================================
+// ==========================================
 
 async function saveProduct() {
 
     if (!isSupabaseReady()) return;
 
-    const product = {
+    const record = {
 
         product: document.getElementById("productName").value.trim(),
 
@@ -189,434 +138,206 @@ async function saveProduct() {
 
         category: document.getElementById("category").value.trim(),
 
+        hsn: document.getElementById("hsn").value.trim(),
+
         lot: document.getElementById("lot").value.trim(),
 
         batch: document.getElementById("batch").value.trim(),
 
-        hsn: document.getElementById("hsn").value.trim(),
+        expiry: document.getElementById("expiry").value,
 
-        purchase_rate: Number(
-            document.getElementById("purchaseRate").value || 0
-        ),
+        purchase_rate: Number(document.getElementById("purchaseRate").value || 0),
 
-        selling_rate: Number(
-            document.getElementById("sellingRate").value || 0
-        ),
+        selling_rate: Number(document.getElementById("sellingRate").value || 0),
 
-        mrp: Number(
-            document.getElementById("mrp").value || 0
-        ),
+        mrp: Number(document.getElementById("mrp").value || 0),
 
-        gst: Number(
-            document.getElementById("gst").value || 0
-        ),
+        gst: Number(document.getElementById("gst").value || 0),
 
-        quantity: Number(
-            document.getElementById("quantity").value || 0
-        ),
+        quantity: Number(document.getElementById("quantity").value || 0),
 
-        unit: document.getElementById("unit").value.trim(),
-
-        expiry: document.getElementById("expiry").value || null
+        unit: document.getElementById("unit").value.trim()
 
     };
 
-    if (product.product === "") {
+    if (!record.product) {
 
-        toast("Product Name is required", "#dc3545");
-
-        return;
-
-    }
-
-    let error;
-
-    if (editingProductId === null) {
-
-        ({ error } = await supabaseClient
-
-            .from("products")
-
-            .insert([product]));
-
-    } else {
-
-        ({ error } = await supabaseClient
-
-            .from("products")
-
-            .update(product)
-
-            .eq("id", editingProductId));
-
-    }
-
-    if (error) {
-
-        console.error(error);
-
-        toast(error.message, "#dc3545");
+        notify("Product name is required.");
 
         return;
 
     }
 
-    toast(
+    try {
 
-        editingProductId === null
+        if (selectedProductId) {
 
-            ? "Product Saved"
+            await updateRecord(
+                "products",
+                selectedProductId,
+                record
+            );
 
-            : "Product Updated"
+            notify("Product Updated");
 
-    );
+        } else {
 
-    resetProductForm();
+            await insertRecord(
+                "products",
+                record
+            );
 
-    await loadProducts();
+            notify("Product Saved");
+
+        }
+
+        resetProductForm();
+
+        loadProducts();
+
+        addActivity("Product saved");
+
+        refreshDashboard();
+
+    }
+
+    catch (err) {
+
+        console.error(err);
+
+        notify(err.message);
+
+    }
 
 }
 
-//==========================================
+// ==========================================
 // Edit Product
-//==========================================
+// ==========================================
 
 function editProduct(id) {
 
-    const product = getProductById(id);
+    const p = productList.find(x => x.id == id);
 
-    if (!product) return;
+    if (!p) return;
 
-    editingProductId = Number(id);
+    selectedProductId = id;
 
-    document.getElementById("productName").value =
-        product.product || "";
+    document.getElementById("productName").value = p.product || "";
 
-    document.getElementById("manufacturer").value =
-        product.manufacturer || "";
+    document.getElementById("manufacturer").value = p.manufacturer || "";
 
-    document.getElementById("category").value =
-        product.category || "";
+    document.getElementById("category").value = p.category || "";
 
-    document.getElementById("lot").value =
-        product.lot || "";
+    document.getElementById("hsn").value = p.hsn || "";
 
-    document.getElementById("batch").value =
-        product.batch || "";
+    document.getElementById("lot").value = p.lot || "";
 
-    document.getElementById("hsn").value =
-        product.hsn || "";
+    document.getElementById("batch").value = p.batch || "";
 
-    document.getElementById("purchaseRate").value =
-        product.purchase_rate || 0;
+    document.getElementById("expiry").value = p.expiry || "";
 
-    document.getElementById("sellingRate").value =
-        product.selling_rate || 0;
+    document.getElementById("purchaseRate").value = p.purchase_rate || 0;
 
-    document.getElementById("mrp").value =
-        product.mrp || 0;
+    document.getElementById("sellingRate").value = p.selling_rate || 0;
 
-    document.getElementById("gst").value =
-        product.gst || 0;
+    document.getElementById("mrp").value = p.mrp || 0;
 
-    document.getElementById("quantity").value =
-        product.quantity || 0;
+    document.getElementById("gst").value = p.gst || 0;
 
-    document.getElementById("unit").value =
-        product.unit || "";
+    document.getElementById("quantity").value = p.quantity || 0;
 
-    document.getElementById("expiry").value =
-        product.expiry || "";
-
-    document.getElementById("saveButtonProduct").textContent =
-        "Update Product";
+    document.getElementById("unit").value = p.unit || "";
 
 }
 
-//==========================================
-// Clear Product Form
-//==========================================
-
-function clearProductForm() {
-
-    document.getElementById("productName").value = "";
-
-    document.getElementById("manufacturer").value = "";
-
-    document.getElementById("category").value = "";
-
-    document.getElementById("lot").value = "";
-
-    document.getElementById("batch").value = "";
-
-    document.getElementById("hsn").value = "";
-
-    document.getElementById("purchaseRate").value = "";
-
-    document.getElementById("sellingRate").value = "";
-
-    document.getElementById("mrp").value = "";
-
-    document.getElementById("gst").value = "";
-
-    document.getElementById("quantity").value = "";
-
-    document.getElementById("unit").value = "";
-
-    document.getElementById("expiry").value = "";
-
-}
-
-//==========================================
-// Reset Product Form
-//==========================================
-
-function resetProductForm() {
-
-    editingProductId = null;
-
-    clearProductForm();
-
-    document.getElementById("saveButtonProduct").textContent =
-        "Save Product";
-
-}
-
-//==========================================
+// ==========================================
 // Delete Product
-//==========================================
+// ==========================================
 
 async function deleteProduct(id) {
 
-    const confirmDelete = confirm(
-        "Are you sure you want to delete this product?"
-    );
-
-    if (!confirmDelete) return;
-
-    const { error } = await supabaseClient
-        .from("products")
-        .delete()
-        .eq("id", id);
-
-    if (error) {
-
-        console.error(error);
-
-        toast(error.message, "#dc3545");
+    if (!confirm("Delete this product?"))
 
         return;
 
-    }
+    try {
 
-    toast("Product deleted successfully");
-
-    await loadProducts();
-
-}
-
-//==========================================
-// Search Product
-//==========================================
-
-function searchProduct() {
-
-    const keyword = document
-        .getElementById("productSearch")
-        .value
-        .trim()
-        .toLowerCase();
-
-    if (keyword === "") {
-
-        renderProducts(productCache);
-
-        return;
-
-    }
-
-    const filtered = productCache.filter(product => {
-
-        return (
-
-            (product.product || "")
-                .toLowerCase()
-                .includes(keyword)
-
-            ||
-
-            (product.manufacturer || "")
-                .toLowerCase()
-                .includes(keyword)
-
-            ||
-
-            (product.category || "")
-                .toLowerCase()
-                .includes(keyword)
-
-            ||
-
-            (product.batch || "")
-                .toLowerCase()
-                .includes(keyword)
-
-            ||
-
-            (product.lot || "")
-                .toLowerCase()
-                .includes(keyword)
-
-            ||
-
-            (product.hsn || "")
-                .toLowerCase()
-                .includes(keyword)
-
+        await deleteRecord(
+            "products",
+            id
         );
 
-    });
+        loadProducts();
 
-    renderProducts(filtered);
+        refreshDashboard();
 
-}
-
-//==========================================
-// Product Exists
-//==========================================
-
-function productExists(productName) {
-
-    return productCache.some(product =>
-
-        (product.product || "")
-            .toLowerCase()
-            ===
-        (productName || "")
-            .toLowerCase()
-
-    );
-
-}
-
-//==========================================
-// Get Product List
-//==========================================
-
-function getProductList() {
-
-    return productCache;
-
-}
-
-//==========================================
-// Refresh Product Module
-//==========================================
-
-async function refreshProductModule() {
-
-    await loadProducts();
-
-}
-
-//==========================================
-// Auto Initialization
-//==========================================
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    // Save Product Button
-    const saveBtn = document.getElementById("saveButtonProduct");
-
-    if (saveBtn) {
-
-        saveBtn.addEventListener("click", saveProduct);
+        addActivity("Product deleted");
 
     }
 
-    // Product Search
-    const searchBox = document.getElementById("productSearch");
+    catch (err) {
 
-    if (searchBox) {
-
-        searchBox.addEventListener("keyup", searchProduct);
+        notify(err.message);
 
     }
 
-    // Press Enter to Save Product
+}
+
+// ==========================================
+// Reset Form
+// ==========================================
+
+function resetProductForm() {
+
+    selectedProductId = null;
+
     [
         "productName",
         "manufacturer",
         "category",
+        "hsn",
         "lot",
         "batch",
-        "hsn",
+        "expiry",
         "purchaseRate",
         "sellingRate",
         "mrp",
         "gst",
         "quantity",
-        "unit",
-        "expiry"
+        "unit"
     ].forEach(id => {
 
-        const element = document.getElementById(id);
+        const el = document.getElementById(id);
 
-        if (!element) return;
-
-        element.addEventListener("keypress", function (e) {
-
-            if (e.key === "Enter") {
-
-                e.preventDefault();
-
-                saveProduct();
-
-            }
-
-        });
-
-    });
-
-    // Initial Product Load
-    if (typeof loadProducts === "function") {
-
-        loadProducts();
-
-    }
-
-});
-
-//==========================================
-// Billing Integration
-//==========================================
-
-function loadInvoiceProducts() {
-
-    const selects = document.querySelectorAll(".invoiceProduct");
-
-    selects.forEach(select => {
-
-        const currentValue = select.value;
-
-        select.innerHTML = `<option value="">Select Product</option>`;
-
-        productCache.forEach(product => {
-
-            select.innerHTML += `
-                <option value="${product.product}">
-                    ${product.product}
-                </option>
-            `;
-
-        });
-
-        select.value = currentValue;
+        if (el)
+            el.value = "";
 
     });
 
 }
 
-//==========================================
-// End of stock.js
-//==========================================
+// ==========================================
+// Search
+// ==========================================
+
+function searchProduct() {
+
+    const text = document
+        .getElementById("productSearch")
+        .value
+        .toLowerCase();
+
+    const filtered = productList.filter(p =>
+
+        (p.product || "").toLowerCase().includes(text) ||
+
+        (p.manufacturer || "").toLowerCase().includes(text) ||
+
+        (p.batch || "").toLowerCase().includes(text)
+
+    );
+
+    renderProducts(filtered);
+
+}
