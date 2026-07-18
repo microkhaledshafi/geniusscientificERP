@@ -1,164 +1,259 @@
-//==========================================
+// ==========================================
 // Genius Scientific ERP
 // app.js
-//==========================================
+// ==========================================
 
+// Current active page
 let currentPage = "dashboard";
 
-//==========================================
-// Show Pages
-//==========================================
+// ==========================================
+// Navigation
+// ==========================================
 
-function showPage(page) {
+function showPage(pageId) {
 
-    document.querySelectorAll(".page").forEach(section => {
-        section.style.display = "none";
+    document.querySelectorAll(".page").forEach(page => {
+        page.classList.remove("active");
     });
 
-    const target = document.getElementById(page);
+    const page = document.getElementById(pageId);
 
-    if (!target) return;
+    if (page)
+        page.classList.add("active");
 
-    target.style.display = "block";
+    currentPage = pageId;
 
-    currentPage = page;
+}
 
-    switch (page) {
+// ==========================================
+// Dashboard
+// ==========================================
 
-        case "stock":
+async function loadDashboard() {
 
-            if (typeof loadProducts === "function") {
-                loadProducts();
-            }
+    if (!isSupabaseReady()) return;
 
-            break;
+    try {
 
-        case "customers":
+        await loadDashboardProducts();
+        await loadDashboardCustomers();
+        await loadDashboardInvoices();
 
-            if (typeof loadCustomers === "function") {
-                loadCustomers();
-            }
+    }
 
-            break;
+    catch (err) {
 
-        case "billing":
-
-            if (typeof loadCustomers === "function") {
-                loadCustomers();
-            }
-
-            if (typeof loadProducts === "function") {
-                loadProducts();
-            }
-
-            if (typeof loadInvoiceCustomers === "function") {
-                loadInvoiceCustomers();
-            }
-
-            if (typeof loadInvoiceProducts === "function") {
-                loadInvoiceProducts();
-            }
-
-            break;
-
-        case "payments":
-
-            if (typeof loadCustomers === "function") {
-                loadCustomers();
-            }
-
-            if (typeof loadPayments === "function") {
-                loadPayments();
-            }
-
-            break;
-
-        case "reports":
-
-            if (typeof loadReports === "function") {
-                loadReports();
-            }
-
-            break;
+        console.error(err);
 
     }
 
 }
 
-//==========================================
+// ==========================================
+// Product Count
+// ==========================================
+
+async function loadDashboardProducts() {
+
+    const { count, error } = await supabaseClient
+
+        .from("products")
+
+        .select("*", {
+            count: "exact",
+            head: true
+        });
+
+    if (!error)
+
+        document.getElementById("totalProducts").innerText = count || 0;
+
+}
+
+// ==========================================
+// Customer Count
+// ==========================================
+
+async function loadDashboardCustomers() {
+
+    const { count, error } = await supabaseClient
+
+        .from("customers")
+
+        .select("*", {
+            count: "exact",
+            head: true
+        });
+
+    if (!error)
+
+        document.getElementById("totalCustomers").innerText = count || 0;
+
+}
+
+// ==========================================
+// Invoice Statistics
+// ==========================================
+
+async function loadDashboardInvoices() {
+
+    const todayDate = today();
+
+    const { data, error } = await supabaseClient
+
+        .from("invoice")
+
+        .select("*");
+
+    if (error) return;
+
+    let todaySales = 0;
+    let todayInvoices = 0;
+    let outstanding = 0;
+    let monthlySales = 0;
+
+    const month = new Date().getMonth() + 1;
+    const year = new Date().getFullYear();
+
+    data.forEach(inv => {
+
+        const invoiceDate = new Date(inv.date);
+
+        if (inv.date === todayDate) {
+
+            todayInvoices++;
+
+            todaySales += Number(inv.grand_total || 0);
+
+        }
+
+        if (
+
+            invoiceDate.getMonth() + 1 === month &&
+            invoiceDate.getFullYear() === year
+
+        ) {
+
+            monthlySales += Number(inv.grand_total || 0);
+
+        }
+
+        outstanding += Number(inv.balance || 0);
+
+    });
+
+    document.getElementById("todaySales").innerText =
+        money(todaySales);
+
+    document.getElementById("todayInvoices").innerText =
+        todayInvoices;
+
+    document.getElementById("monthlySales").innerText =
+        money(monthlySales);
+
+    document.getElementById("outstanding").innerText =
+        money(outstanding);
+
+}
+
+// ==========================================
+// Recent Activity
+// ==========================================
+
+function addActivity(activity) {
+
+    const body = document.getElementById("activityBody");
+
+    if (!body) return;
+
+    if (body.innerText.includes("No recent")) {
+
+        body.innerHTML = "";
+
+    }
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+
+        <td>${today()}</td>
+
+        <td>${activity}</td>
+
+        <td>Admin</td>
+
+    `;
+
+    body.prepend(row);
+
+}
+
+// ==========================================
 // Toast Notification
-//==========================================
+// ==========================================
 
-function toast(message, color = "#198754") {
+function notify(message) {
 
-    let toastBox = document.getElementById("toast");
-
-    if (!toastBox) {
-
-        toastBox = document.createElement("div");
-
-        toastBox.id = "toast";
-
-        toastBox.style.position = "fixed";
-        toastBox.style.right = "20px";
-        toastBox.style.bottom = "20px";
-        toastBox.style.padding = "12px 20px";
-        toastBox.style.borderRadius = "8px";
-        toastBox.style.color = "#fff";
-        toastBox.style.fontWeight = "bold";
-        toastBox.style.zIndex = "99999";
-        toastBox.style.display = "none";
-
-        document.body.appendChild(toastBox);
-
-    }
-
-    toastBox.style.background = color;
-    toastBox.innerHTML = message;
-    toastBox.style.display = "block";
-
-    setTimeout(() => {
-
-        toastBox.style.display = "none";
-
-    }, 2500);
+    alert(message);
 
 }
 
-//==========================================
-// Dashboard Refresh
-//==========================================
+// ==========================================
+// Loading
+// ==========================================
+
+function showLoader() {
+
+    console.log("Loading...");
+
+}
+
+function hideLoader() {
+
+    console.log("Done");
+
+}
+
+// ==========================================
+// Refresh Dashboard
+// ==========================================
 
 async function refreshDashboard() {
 
-    if (typeof loadProducts === "function") {
-
-        await loadProducts();
-
-    }
-
-    if (typeof loadCustomers === "function") {
-
-        await loadCustomers();
-
-    }
+    await loadDashboard();
 
 }
 
-//==========================================
-// Application Start
-//==========================================
+// ==========================================
+// Set Today's Date
+// ==========================================
 
-document.addEventListener("DOMContentLoaded", async () => {
+function initialiseDates() {
+
+    const todayValue = today();
+
+    if (document.getElementById("invoiceDate"))
+
+        document.getElementById("invoiceDate").value = todayValue;
+
+    if (document.getElementById("purchaseDate"))
+
+        document.getElementById("purchaseDate").value = todayValue;
+
+    if (document.getElementById("paymentDate"))
+
+        document.getElementById("paymentDate").value = todayValue;
+
+}
+
+// ==========================================
+// Start
+// ==========================================
+
+window.addEventListener("load", () => {
+
+    initialiseDates();
 
     showPage("dashboard");
-
-    if (typeof testConnection === "function") {
-
-        await testConnection();
-
-    }
-
-    await refreshDashboard();
 
 });
