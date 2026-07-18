@@ -157,11 +157,11 @@ async function getNextInvoiceNumber() {
 
     const { data, error } = await supabaseClient
 
-        .from("invoice")
+        .from("Invoice")
 
         .select("invoice_number")
 
-        .order("id", { ascending: false })
+        .order("invoice_number", { ascending: false })
 
         .limit(1);
 
@@ -188,3 +188,7 @@ function today() {
     return new Date().toISOString().substring(0, 10);
 
 }
+
+
+function enableResponsiveERP(){document.documentElement.classList.add("erp-mobile-ready");}
+document.addEventListener("DOMContentLoaded", enableResponsiveERP);
