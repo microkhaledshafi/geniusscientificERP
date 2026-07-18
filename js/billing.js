@@ -842,3 +842,72 @@ async function printInvoice(invoiceNo){
     // matching your Genius Scientific format.
 
 }
+
+async function saveInvoice() {
+
+    try {
+
+        const customer = document.getElementById("customerName").value;
+
+        const invoice = {
+
+            invoice_number: document.getElementById("invoiceNumber").value,
+
+            customer: customer,
+
+            date: document.getElementById("invoiceDate").value,
+
+            discount: Number(document.getElementById("discountTotal").innerText),
+
+            gst:
+                Number(document.getElementById("cgstTotal").innerText) +
+                Number(document.getElementById("sgstTotal").innerText),
+
+            grand_total: Number(document.getElementById("grandTotal").innerText),
+
+            paid_amount: Number(document.getElementById("paidAmount").value || 0),
+
+            balance:
+                Number(document.getElementById("grandTotal").innerText) -
+                Number(document.getElementById("paidAmount").value || 0),
+
+            status:
+                Number(document.getElementById("paidAmount").value || 0) >=
+                Number(document.getElementById("grandTotal").innerText)
+                    ? "PAID"
+                    : "UNPAID",
+
+            remarks:
+                document.getElementById("remarks").value || ""
+
+        };
+
+        const items = getInvoiceItems();
+
+        const { data, error } = await supabase.rpc(
+            "save_invoice",
+            {
+                invoice_json: invoice,
+                items_json: items
+            }
+        );
+
+        if (error)
+            throw error;
+
+        alert("Invoice Saved Successfully");
+
+        await loadProducts();
+
+        newInvoice();
+
+    }
+    catch(err){
+
+        console.error(err);
+
+        alert(err.message);
+
+    }
+
+}
