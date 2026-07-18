@@ -1,24 +1,44 @@
-//==========================================
+// ==========================================
 // Genius Scientific ERP
 // Supabase Configuration
-//==========================================
+// ==========================================
 
 // Replace with your own values
-const SUPABASE_URL = "https://cxssryhesrgomcdxddwn.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_QiNQzM7U5l6mJpbHIN4UJQ_nv_90lED";
+const SUPABASE_URL = "YOUR_SUPABASE_URL";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
 
-//==========================================
-// Create Supabase Client
-//==========================================
+// Create client
+const { createClient } = window.supabase;
 
-const supabaseClient = supabase.createClient(
+const supabaseClient = createClient(
     SUPABASE_URL,
     SUPABASE_ANON_KEY
 );
 
-//==========================================
-// Test Connection
-//==========================================
+// Backward compatibility
+const supabase = supabaseClient;
+
+// ==========================================
+// Helpers
+// ==========================================
+
+function isSupabaseReady() {
+
+    if (!supabaseClient) {
+
+        alert("Supabase is not initialized.");
+
+        return false;
+
+    }
+
+    return true;
+
+}
+
+// ==========================================
+// Connection Test
+// ==========================================
 
 async function testConnection() {
 
@@ -30,48 +50,141 @@ async function testConnection() {
             .limit(1);
 
         if (error) {
-            console.error(error);
-            alert("Supabase Error:\n" + error.message);
+
+            console.error("Supabase Error:", error);
+
+            alert(error.message);
+
             return false;
+
         }
 
-        console.log("Supabase Connected Successfully");
+        console.log("✓ Connected to Supabase");
+
         return true;
 
-    } catch (err) {
+    }
+
+    catch (err) {
 
         console.error(err);
+
         alert("Unable to connect to Supabase.");
+
         return false;
 
     }
 
 }
 
-//==========================================
-// Helper
-//==========================================
+// ==========================================
+// Generic Helpers
+// ==========================================
 
-function isSupabaseReady() {
+async function getAll(table) {
 
-    if (!supabaseClient) {
+    const { data, error } = await supabaseClient
+        .from(table)
+        .select("*");
 
-        alert("Supabase Client Not Initialised");
+    if (error) throw error;
 
-        return false;
-
-    }
-
-    return true;
+    return data;
 
 }
 
-//==========================================
-// Auto Connection Test
-//==========================================
+async function getById(table, id) {
 
-document.addEventListener("DOMContentLoaded", async () => {
+    const { data, error } = await supabaseClient
+        .from(table)
+        .select("*")
+        .eq("id", id)
+        .single();
 
-    await testConnection();
+    if (error) throw error;
 
-});
+    return data;
+
+}
+
+async function insertRecord(table, record) {
+
+    const { data, error } = await supabaseClient
+        .from(table)
+        .insert(record)
+        .select();
+
+    if (error) throw error;
+
+    return data;
+
+}
+
+async function updateRecord(table, id, record) {
+
+    const { data, error } = await supabaseClient
+        .from(table)
+        .update(record)
+        .eq("id", id)
+        .select();
+
+    if (error) throw error;
+
+    return data;
+
+}
+
+async function deleteRecord(table, id) {
+
+    const { error } = await supabaseClient
+        .from(table)
+        .delete()
+        .eq("id", id);
+
+    if (error) throw error;
+
+}
+
+// ==========================================
+// Invoice Number Generator
+// ==========================================
+
+async function getNextInvoiceNumber() {
+
+    const year = new Date().getFullYear();
+
+    const prefix = "INV-" + year + "-";
+
+    const { data, error } = await supabaseClient
+
+        .from("invoice")
+
+        .select("invoice_number")
+
+        .order("id", { ascending: false })
+
+        .limit(1);
+
+    if (error || !data.length) {
+
+        return prefix + "0001";
+
+    }
+
+    const last = data[0].invoice_number;
+
+    const number = parseInt(last.split("-").pop()) + 1;
+
+    return prefix + String(number).padStart(4, "0");
+
+}
+
+// ==========================================
+// Current Date
+// ==========================================
+
+function today() {
+
+    return new Date().toISOString().substring(0, 10);
+
+}
